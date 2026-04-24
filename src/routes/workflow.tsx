@@ -1,8 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { TEETH, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem, DIAGNOSES, IRRIGATION_STEPS } from "@/lib/endo-data";
+import {
+  TEETH, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem,
+  DIAGNOSES, IRRIGATION_STEPS, IRRIGATION_SAFETY,
+  ACCESS_GUIDES, BUR_RECOMMENDATIONS, MAF_GUIDANCE, RUBBER_DAM_TIPS,
+} from "@/lib/endo-data";
 import { PageHeader } from "@/components/AppShell";
 import { Check, ChevronLeft, ChevronRight, AlertTriangle, Save } from "lucide-react";
+
+function accessGroupFor(fdi: string, group: "anterior" | "premolar" | "molar") {
+  const upper = fdi.startsWith("1") || fdi.startsWith("2");
+  if (group === "anterior") {
+    // Canines get their own row in the spec for maxillary
+    if (upper && (fdi.endsWith("3"))) return "Max Canine" as const;
+    return upper ? "Max Incisors" as const : "Mand Incisors" as const;
+  }
+  if (group === "premolar") return upper ? "Max Premolars" as const : "Mand Premolars" as const;
+  return upper ? "Max Molars" as const : "Mand Molars" as const;
+}
 
 export const Route = createFileRoute("/workflow")({
   head: () => ({
