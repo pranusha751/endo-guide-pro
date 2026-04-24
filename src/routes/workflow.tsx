@@ -173,31 +173,41 @@ function WorkflowPage() {
           </>
         )}
 
-        {step === 4 && toothInfo && (
-          <>
-            <Card title="Access Cavity">
-              <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
-                  <div className="text-sm text-mint-foreground/80 mt-1">{toothInfo.accessShape}</div>
+        {step === 4 && toothInfo && (() => {
+          const guide = ACCESS_GUIDES.find((g) => g.group === accessGroupFor(toothInfo.fdi, toothInfo.group))!;
+          return (
+            <>
+              <Card title="Access Cavity Design">
+                <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
+                    <div className="text-sm text-mint-foreground/80 mt-1">{guide.shape}</div>
+                  </div>
                 </div>
-              </div>
-              <Stat label="Access shape" value={toothInfo.accessShape} />
-              <div className="h-2" />
-              <Stat label="Bur" value="Round #2 → Endo-Z (non-cutting tip)" />
-              <div className="h-2" />
-              <Stat label="Entry point" value={toothInfo.group === "anterior" ? "Cingulum (lingual)" : "Central fossa"} />
-            </Card>
-            <Card title="Common Mistakes">
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• Under-extending the access (missed canals)</li>
-                <li>• Perforating the furcation in molars</li>
-                <li>• Damaging the pulpal floor anatomy</li>
-                <li>• Inadequate de-roofing of pulp chamber</li>
-              </ul>
-            </Card>
-          </>
-        )}
+                <Stat label="Tooth group" value={guide.group} />
+                <div className="h-2" />
+                <Stat label="Access shape" value={guide.shape} />
+                <div className="h-2" />
+                <Stat label="Bur entry point" value={guide.entry} />
+                <div className="h-2" />
+                <Stat label="Key landmarks" value={guide.landmarks} />
+              </Card>
+              <Card title="Bur Recommendations">
+                <ul className="text-sm space-y-2">
+                  {BUR_RECOMMENDATIONS.map((b) => (
+                    <li key={b.phase}>
+                      <span className="font-medium">{b.phase}:</span>{" "}
+                      <span className="text-muted-foreground">{b.bur}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+              <Card title="Common Errors">
+                <p className="text-sm text-muted-foreground">{guide.errors}</p>
+              </Card>
+            </>
+          );
+        })()}
 
         {step === 5 && (
           <>
