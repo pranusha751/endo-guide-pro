@@ -291,32 +291,37 @@ function WorkflowPage() {
                 );
               })}
             </div>
-            <div className="mt-4 rounded-2xl bg-warning/30 border border-warning/40 p-3 text-xs text-warning-foreground flex gap-2">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Never extrude NaOCl beyond apex. Use side-vented needle 2 mm short of WL.</span>
+            <div className="mt-4 rounded-2xl bg-warning/30 border border-warning/40 p-3 text-xs text-warning-foreground space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <AlertTriangle className="w-4 h-4" /> Safety notes
+              </div>
+              <ul className="space-y-1.5 list-disc pl-4">
+                {IRRIGATION_SAFETY.map((s) => <li key={s}>{s}</li>)}
+              </ul>
             </div>
           </Card>
         )}
 
         {step === 7 && toothInfo && (
-          <Card title="Rubber Dam Setup">
-            <div className="rounded-2xl bg-peach p-4 mb-4">
-              <div className="text-xs uppercase tracking-wide text-peach-foreground/70">Tooth group</div>
-              <div className="text-lg font-semibold capitalize text-peach-foreground">{toothInfo.group}</div>
-            </div>
-            <Stat label="Recommended clamp" value={toothInfo.clamp} />
-            <div className="h-3" />
-            <Stat label="Isolation" value="Single-tooth isolation, hole punched slightly off-centre" />
-            <div className="mt-4">
-              <h4 className="text-sm font-semibold mb-2">Tips</h4>
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• Pre-test clamp before placement</li>
-                <li>• Floss ligature for extra retention</li>
-                <li>• OraSeal/Caulk to seal leakage</li>
-                <li>• Split-dam for badly broken-down teeth</li>
-              </ul>
-            </div>
-          </Card>
+          <>
+            <Card title="Rubber Dam Setup">
+              <div className="rounded-2xl bg-peach p-4 mb-4">
+                <div className="text-xs uppercase tracking-wide text-peach-foreground/70">Tooth group</div>
+                <div className="text-lg font-semibold capitalize text-peach-foreground">{toothInfo.group}</div>
+              </div>
+              <Stat label="Recommended clamp" value={toothInfo.clamp} />
+            </Card>
+            <Card title="Tips & Clamp Guide">
+              <div className="space-y-3">
+                {RUBBER_DAM_TIPS.map((t) => (
+                  <div key={t.category} className="rounded-xl border border-border p-3">
+                    <div className="text-xs font-semibold text-foreground">{t.category}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{t.details}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </>
         )}
 
         {step === 8 && (
