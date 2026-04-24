@@ -8,30 +8,20 @@ export const Route = createFileRoute("/diagnosis")({
   component: DiagnosisPage,
 });
 
-const MATRIX = [
-  { dx: "normal", symptoms: "None", pulpTest: "Normal response", radiograph: "Normal PDL", treatment: "Monitor" },
-  { dx: "reversible", symptoms: "Brief cold pain", pulpTest: "Heightened brief", radiograph: "Normal PDL", treatment: "Sedative restoration" },
-  { dx: "irreversible", symptoms: "Lingering / spontaneous pain", pulpTest: "Lingering response", radiograph: "Normal / widened PDL", treatment: "RCT or extraction" },
-  { dx: "necrosis", symptoms: "Often asymptomatic", pulpTest: "No response", radiograph: "Normal / widened PDL", treatment: "RCT" },
-  { dx: "apical", symptoms: "Pain on biting", pulpTest: "No response + percussion +", radiograph: "PA radiolucency", treatment: "RCT + apical disinfection" },
-  { dx: "abscess", symptoms: "Swelling, sinus tract", pulpTest: "No response", radiograph: "PA radiolucency", treatment: "Drainage + RCT" },
-];
-
 function DiagnosisPage() {
-  const [selected, setSelected] = useState<string>("irreversible");
+  const [selected, setSelected] = useState<string>("irreversible-symp");
 
   return (
     <div>
-      <PageHeader title="Diagnosis Matrix" subtitle="Tap a row to highlight" />
+      <PageHeader title="Pulp Diagnosis Matrix" subtitle="Tap a row to highlight — based on AAE classification" />
 
       <div className="space-y-3">
-        {MATRIX.map((row) => {
-          const dx = DIAGNOSES.find((d) => d.id === row.dx)!;
-          const active = selected === row.dx;
+        {DIAGNOSES.map((dx) => {
+          const active = selected === dx.id;
           return (
             <button
-              key={row.dx}
-              onClick={() => setSelected(row.dx)}
+              key={dx.id}
+              onClick={() => setSelected(dx.id)}
               className={`w-full text-left rounded-2xl border p-4 transition-all shadow-card ${
                 active ? `bg-${dx.color} border-transparent` : "bg-card border-border"
               }`}
@@ -40,10 +30,10 @@ function DiagnosisPage() {
                 {dx.label}
               </div>
               <div className={`grid grid-cols-1 gap-1.5 mt-3 text-xs ${active ? `text-${dx.color}-foreground/90` : "text-muted-foreground"}`}>
-                <Row label="Symptoms" value={row.symptoms} />
-                <Row label="Pulp test" value={row.pulpTest} />
-                <Row label="Radiograph" value={row.radiograph} />
-                <Row label="Treatment" value={row.treatment} />
+                <Row label="Symptoms" value={dx.symptoms} />
+                <Row label="Pulp test" value={dx.pulpTests} />
+                <Row label="Radiograph" value={dx.radiograph} />
+                <Row label="Treatment" value={dx.treatment} />
               </div>
             </button>
           );

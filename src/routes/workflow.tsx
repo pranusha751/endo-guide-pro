@@ -1,8 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { TEETH, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem, DIAGNOSES, IRRIGATION_STEPS } from "@/lib/endo-data";
+import {
+  TEETH, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem,
+  DIAGNOSES, IRRIGATION_STEPS, IRRIGATION_SAFETY,
+  ACCESS_GUIDES, BUR_RECOMMENDATIONS, MAF_GUIDANCE, RUBBER_DAM_TIPS,
+} from "@/lib/endo-data";
 import { PageHeader } from "@/components/AppShell";
 import { Check, ChevronLeft, ChevronRight, AlertTriangle, Save } from "lucide-react";
+
+function accessGroupFor(fdi: string, group: "anterior" | "premolar" | "molar") {
+  const upper = fdi.startsWith("1") || fdi.startsWith("2");
+  if (group === "anterior") {
+    // Canines get their own row in the spec for maxillary
+    if (upper && (fdi.endsWith("3"))) return "Max Canine" as const;
+    return upper ? "Max Incisors" as const : "Mand Incisors" as const;
+  }
+  if (group === "premolar") return upper ? "Max Premolars" as const : "Mand Premolars" as const;
+  return upper ? "Max Molars" as const : "Mand Molars" as const;
+}
 
 export const Route = createFileRoute("/workflow")({
   head: () => ({
@@ -53,10 +68,12 @@ function WorkflowPage() {
   const protocol = FILE_PROTOCOLS[fileSys];
 
   const suggestedDx = useMemo(() => {
-    if (symptoms.swelling !== "none" || symptoms.sinus) return "abscess";
-    if (tests.percussion !== "Negative" && tests.cold === "No response") return "apical";
+    if (symptoms.swelling === "diffuse") return "acute-abscess";
+    if (symptoms.sinus) return "chronic-abscess";
+    if (symptoms.swelling === "localized" && symptoms.spontaneous) return "acute-abscess";
+    if (tests.percussion !== "Negative" && (tests.cold === "No response" || tests.radiograph === "PA radiolucency")) return "apical";
     if (tests.cold === "No response" && tests.ept === "No response") return "necrosis";
-    if (symptoms.cold === "lingering" || symptoms.spontaneous) return "irreversible";
+    if (symptoms.cold === "lingering" || symptoms.spontaneous) return "irreversible-symp";
     if (symptoms.cold === "brief") return "reversible";
     return "normal";
   }, [symptoms, tests]);
@@ -156,31 +173,41 @@ function WorkflowPage() {
           </>
         )}
 
-        {step === 4 && toothInfo && (
-          <>
-            <Card title="Access Cavity">
-              <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
-                  <div className="text-sm text-mint-foreground/80 mt-1">{toothInfo.accessShape}</div>
+        {step === 4 && toothInfo && (() => {
+          const guide = ACCESS_GUIDES.find((g) => g.group === accessGroupFor(toothInfo.fdi, toothInfo.group))!;
+          return (
+            <>
+              <Card title="Access Cavity Design">
+                <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
+                    <div className="text-sm text-mint-foreground/80 mt-1">{guide.shape}</div>
+                  </div>
                 </div>
-              </div>
-              <Stat label="Access shape" value={toothInfo.accessShape} />
-              <div className="h-2" />
-              <Stat label="Bur" value="Round #2 → Endo-Z (non-cutting tip)" />
-              <div className="h-2" />
-              <Stat label="Entry point" value={toothInfo.group === "anterior" ? "Cingulum (lingual)" : "Central fossa"} />
-            </Card>
-            <Card title="Common Mistakes">
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• Under-extending the access (missed canals)</li>
-                <li>• Perforating the furcation in molars</li>
-                <li>• Damaging the pulpal floor anatomy</li>
-                <li>• Inadequate de-roofing of pulp chamber</li>
-              </ul>
-            </Card>
-          </>
-        )}
+                <Stat label="Tooth group" value={guide.group} />
+                <div className="h-2" />
+                <Stat label="Access shape" value={guide.shape} />
+                <div className="h-2" />
+                <Stat label="Bur entry point" value={guide.entry} />
+                <div className="h-2" />
+                <Stat label="Key landmarks" value={guide.landmarks} />
+              </Card>
+              <Card title="Bur Recommendations">
+                <ul className="text-sm space-y-2">
+                  {BUR_RECOMMENDATIONS.map((b) => (
+                    <li key={b.phase}>
+                      <span className="font-medium">{b.phase}:</span>{" "}
+                      <span className="text-muted-foreground">{b.bur}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+              <Card title="Common Errors">
+                <p className="text-sm text-muted-foreground">{guide.errors}</p>
+              </Card>
+            </>
+          );
+        })()}
 
         {step === 5 && (
           <>
@@ -211,7 +238,22 @@ function WorkflowPage() {
                 <Stat label="Torque" value={protocol.torque} />
               </div>
               <div className="h-2" />
+              <Stat label="Taper" value={protocol.taper} />
+              <div className="h-2" />
               <Stat label="Master apical file" value={protocol.maf} />
+            </Card>
+            <Card title="MAF Guidance">
+              <ul className="text-sm space-y-2">
+                {MAF_GUIDANCE.map((m) => (
+                  <li key={m.canal}>
+                    <span className="font-medium">{m.canal}:</span>{" "}
+                    <span className="text-muted-foreground">{m.maf}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground mt-3">
+                Minimum recommended apical preparation for adequate irrigation: ISO #25 with ≥0.04 taper.
+              </p>
             </Card>
           </>
         )}
@@ -249,32 +291,37 @@ function WorkflowPage() {
                 );
               })}
             </div>
-            <div className="mt-4 rounded-2xl bg-warning/30 border border-warning/40 p-3 text-xs text-warning-foreground flex gap-2">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <span>Never extrude NaOCl beyond apex. Use side-vented needle 2 mm short of WL.</span>
+            <div className="mt-4 rounded-2xl bg-warning/30 border border-warning/40 p-3 text-xs text-warning-foreground space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <AlertTriangle className="w-4 h-4" /> Safety notes
+              </div>
+              <ul className="space-y-1.5 list-disc pl-4">
+                {IRRIGATION_SAFETY.map((s) => <li key={s}>{s}</li>)}
+              </ul>
             </div>
           </Card>
         )}
 
         {step === 7 && toothInfo && (
-          <Card title="Rubber Dam Setup">
-            <div className="rounded-2xl bg-peach p-4 mb-4">
-              <div className="text-xs uppercase tracking-wide text-peach-foreground/70">Tooth group</div>
-              <div className="text-lg font-semibold capitalize text-peach-foreground">{toothInfo.group}</div>
-            </div>
-            <Stat label="Recommended clamp" value={toothInfo.clamp} />
-            <div className="h-3" />
-            <Stat label="Isolation" value="Single-tooth isolation, hole punched slightly off-centre" />
-            <div className="mt-4">
-              <h4 className="text-sm font-semibold mb-2">Tips</h4>
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li>• Pre-test clamp before placement</li>
-                <li>• Floss ligature for extra retention</li>
-                <li>• OraSeal/Caulk to seal leakage</li>
-                <li>• Split-dam for badly broken-down teeth</li>
-              </ul>
-            </div>
-          </Card>
+          <>
+            <Card title="Rubber Dam Setup">
+              <div className="rounded-2xl bg-peach p-4 mb-4">
+                <div className="text-xs uppercase tracking-wide text-peach-foreground/70">Tooth group</div>
+                <div className="text-lg font-semibold capitalize text-peach-foreground">{toothInfo.group}</div>
+              </div>
+              <Stat label="Recommended clamp" value={toothInfo.clamp} />
+            </Card>
+            <Card title="Tips & Clamp Guide">
+              <div className="space-y-3">
+                {RUBBER_DAM_TIPS.map((t) => (
+                  <div key={t.category} className="rounded-xl border border-border p-3">
+                    <div className="text-xs font-semibold text-foreground">{t.category}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{t.details}</div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </>
         )}
 
         {step === 8 && (
