@@ -1,0 +1,138 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-peach: var(--peach);
+  --color-peach-foreground: var(--peach-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --shadow-soft: 0 4px 20px -4px oklch(0.5 0.05 160 / 0.12);
+  --shadow-card: 0 2px 12px -2px oklch(0.4 0.04 150 / 0.08);
+}
+
+:root {
+  --radius: 1rem;
+
+  /* Beige base */
+  --background: oklch(0.974 0.018 90);
+  --foreground: oklch(0.25 0.02 160);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.02 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.02 160);
+
+  /* Mint primary */
+  --primary: oklch(0.78 0.12 160);
+  --primary-foreground: oklch(0.22 0.04 160);
+
+  /* Peach secondary */
+  --secondary: oklch(0.88 0.08 60);
+  --secondary-foreground: oklch(0.3 0.05 50);
+
+  --muted: oklch(0.95 0.012 90);
+  --muted-foreground: oklch(0.5 0.02 140);
+
+  --accent: oklch(0.92 0.06 160);
+  --accent-foreground: oklch(0.25 0.04 160);
+
+  --destructive: oklch(0.62 0.18 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.9 0.015 100);
+  --input: oklch(0.92 0.012 100);
+  --ring: oklch(0.78 0.12 160);
+
+  --mint: oklch(0.91 0.08 160);
+  --mint-foreground: oklch(0.28 0.06 160);
+  --peach: oklch(0.9 0.07 60);
+  --peach-foreground: oklch(0.35 0.08 45);
+  --warning: oklch(0.75 0.15 60);
+  --warning-foreground: oklch(0.25 0.05 45);
+
+  --sidebar: oklch(0.98 0.012 90);
+  --sidebar-foreground: oklch(0.25 0.02 160);
+  --sidebar-primary: oklch(0.78 0.12 160);
+  --sidebar-primary-foreground: oklch(0.22 0.04 160);
+  --sidebar-accent: oklch(0.92 0.06 160);
+  --sidebar-accent-foreground: oklch(0.25 0.04 160);
+  --sidebar-border: oklch(0.9 0.015 100);
+  --sidebar-ring: oklch(0.78 0.12 160);
+}
+
+.dark {
+  --background: oklch(0.18 0.01 160);
+  --foreground: oklch(0.96 0.01 90);
+  --card: oklch(0.22 0.015 160);
+  --card-foreground: oklch(0.96 0.01 90);
+  --popover: oklch(0.22 0.015 160);
+  --popover-foreground: oklch(0.96 0.01 90);
+  --primary: oklch(0.78 0.12 160);
+  --primary-foreground: oklch(0.18 0.04 160);
+  --secondary: oklch(0.32 0.04 60);
+  --secondary-foreground: oklch(0.95 0.02 60);
+  --muted: oklch(0.26 0.012 160);
+  --muted-foreground: oklch(0.7 0.02 140);
+  --accent: oklch(0.3 0.05 160);
+  --accent-foreground: oklch(0.95 0.02 160);
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.3 0.015 160);
+  --input: oklch(0.3 0.015 160);
+  --ring: oklch(0.78 0.12 160);
+  --mint: oklch(0.35 0.08 160);
+  --mint-foreground: oklch(0.95 0.04 160);
+  --peach: oklch(0.4 0.06 60);
+  --peach-foreground: oklch(0.95 0.04 60);
+  --warning: oklch(0.7 0.14 60);
+  --warning-foreground: oklch(0.18 0.04 45);
+  --sidebar: oklch(0.22 0.015 160);
+  --sidebar-foreground: oklch(0.96 0.01 90);
+  --sidebar-primary: oklch(0.78 0.12 160);
+  --sidebar-primary-foreground: oklch(0.18 0.04 160);
+  --sidebar-accent: oklch(0.3 0.05 160);
+  --sidebar-accent-foreground: oklch(0.95 0.02 160);
+  --sidebar-border: oklch(0.3 0.015 160);
+  --sidebar-ring: oklch(0.78 0.12 160);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+}
