@@ -238,7 +238,22 @@ function WorkflowPage() {
                 <Stat label="Torque" value={protocol.torque} />
               </div>
               <div className="h-2" />
+              <Stat label="Taper" value={protocol.taper} />
+              <div className="h-2" />
               <Stat label="Master apical file" value={protocol.maf} />
+            </Card>
+            <Card title="MAF Guidance">
+              <ul className="text-sm space-y-2">
+                {MAF_GUIDANCE.map((m) => (
+                  <li key={m.canal}>
+                    <span className="font-medium">{m.canal}:</span>{" "}
+                    <span className="text-muted-foreground">{m.maf}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground mt-3">
+                Minimum recommended apical preparation for adequate irrigation: ISO #25 with ≥0.04 taper.
+              </p>
             </Card>
           </>
         )}
