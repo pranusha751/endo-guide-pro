@@ -68,10 +68,12 @@ function WorkflowPage() {
   const protocol = FILE_PROTOCOLS[fileSys];
 
   const suggestedDx = useMemo(() => {
-    if (symptoms.swelling !== "none" || symptoms.sinus) return "abscess";
-    if (tests.percussion !== "Negative" && tests.cold === "No response") return "apical";
+    if (symptoms.swelling === "diffuse") return "acute-abscess";
+    if (symptoms.sinus) return "chronic-abscess";
+    if (symptoms.swelling === "localized" && symptoms.spontaneous) return "acute-abscess";
+    if (tests.percussion !== "Negative" && (tests.cold === "No response" || tests.radiograph === "PA radiolucency")) return "apical";
     if (tests.cold === "No response" && tests.ept === "No response") return "necrosis";
-    if (symptoms.cold === "lingering" || symptoms.spontaneous) return "irreversible";
+    if (symptoms.cold === "lingering" || symptoms.spontaneous) return "irreversible-symp";
     if (symptoms.cold === "brief") return "reversible";
     return "normal";
   }, [symptoms, tests]);
