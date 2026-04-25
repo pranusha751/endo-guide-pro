@@ -12,12 +12,16 @@ const tabs = [
 
 export function AppShell() {
   const location = useLocation();
+  const isAuthPage = ["/login", "/signup"].includes(location.pathname);
+
+
   return (
     <PhoneFrame>
-        <main className="flex-1 pb-24 px-5 pt-6 overflow-y-auto">
-          <Outlet />
-        </main>
-        <nav className="absolute bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border">
+      <main className={`flex-1 ${!isAuthPage ? "pb-24" : ""} px-5 pt-6 overflow-y-auto`}>
+        <Outlet />
+      </main>
+      {!isAuthPage && (
+        <nav className="absolute bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border animate-in slide-in-from-bottom-full duration-300">
           <ul className="grid grid-cols-5 px-2 py-2">
             {tabs.map((t) => {
               const active = location.pathname.startsWith(t.to);
@@ -26,8 +30,10 @@ export function AppShell() {
                 <li key={t.to}>
                   <Link
                     to={t.to}
-                    className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${
-                      active ? "text-primary-foreground bg-primary" : "text-muted-foreground hover:text-foreground"
+                    className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[11px] font-medium transition-all ${
+                      active
+                        ? "text-primary-foreground bg-primary shadow-sm scale-105"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -38,9 +44,12 @@ export function AppShell() {
             })}
           </ul>
         </nav>
+      )}
     </PhoneFrame>
   );
 }
+
+
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (

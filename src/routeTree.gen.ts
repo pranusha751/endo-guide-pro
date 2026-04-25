@@ -17,6 +17,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiagnosisRouteImport } from './routes/diagnosis'
 import { Route as AnatomyRouteImport } from './routes/anatomy'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkflowSummaryRouteImport } from './routes/workflow.summary'
+import { Route as ToolsRubberDamRouteImport } from './routes/tools.rubber-dam'
+import { Route as ToolsIrrigationRouteImport } from './routes/tools.irrigation'
+import { Route as ToolsFileCalculatorRouteImport } from './routes/tools.file-calculator'
 
 const WorkflowRoute = WorkflowRouteImport.update({
   id: '/workflow',
@@ -58,6 +62,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkflowSummaryRoute = WorkflowSummaryRouteImport.update({
+  id: '/summary',
+  path: '/summary',
+  getParentRoute: () => WorkflowRoute,
+} as any)
+const ToolsRubberDamRoute = ToolsRubberDamRouteImport.update({
+  id: '/rubber-dam',
+  path: '/rubber-dam',
+  getParentRoute: () => ToolsRoute,
+} as any)
+const ToolsIrrigationRoute = ToolsIrrigationRouteImport.update({
+  id: '/irrigation',
+  path: '/irrigation',
+  getParentRoute: () => ToolsRoute,
+} as any)
+const ToolsFileCalculatorRoute = ToolsFileCalculatorRouteImport.update({
+  id: '/file-calculator',
+  path: '/file-calculator',
+  getParentRoute: () => ToolsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,8 +90,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tools': typeof ToolsRoute
-  '/workflow': typeof WorkflowRoute
+  '/tools': typeof ToolsRouteWithChildren
+  '/workflow': typeof WorkflowRouteWithChildren
+  '/tools/file-calculator': typeof ToolsFileCalculatorRoute
+  '/tools/irrigation': typeof ToolsIrrigationRoute
+  '/tools/rubber-dam': typeof ToolsRubberDamRoute
+  '/workflow/summary': typeof WorkflowSummaryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,8 +104,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tools': typeof ToolsRoute
-  '/workflow': typeof WorkflowRoute
+  '/tools': typeof ToolsRouteWithChildren
+  '/workflow': typeof WorkflowRouteWithChildren
+  '/tools/file-calculator': typeof ToolsFileCalculatorRoute
+  '/tools/irrigation': typeof ToolsIrrigationRoute
+  '/tools/rubber-dam': typeof ToolsRubberDamRoute
+  '/workflow/summary': typeof WorkflowSummaryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +119,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tools': typeof ToolsRoute
-  '/workflow': typeof WorkflowRoute
+  '/tools': typeof ToolsRouteWithChildren
+  '/workflow': typeof WorkflowRouteWithChildren
+  '/tools/file-calculator': typeof ToolsFileCalculatorRoute
+  '/tools/irrigation': typeof ToolsIrrigationRoute
+  '/tools/rubber-dam': typeof ToolsRubberDamRoute
+  '/workflow/summary': typeof WorkflowSummaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +137,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/tools'
     | '/workflow'
+    | '/tools/file-calculator'
+    | '/tools/irrigation'
+    | '/tools/rubber-dam'
+    | '/workflow/summary'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +151,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/tools'
     | '/workflow'
+    | '/tools/file-calculator'
+    | '/tools/irrigation'
+    | '/tools/rubber-dam'
+    | '/workflow/summary'
   id:
     | '__root__'
     | '/'
@@ -121,6 +165,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/tools'
     | '/workflow'
+    | '/tools/file-calculator'
+    | '/tools/irrigation'
+    | '/tools/rubber-dam'
+    | '/workflow/summary'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -130,8 +178,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   SignupRoute: typeof SignupRoute
-  ToolsRoute: typeof ToolsRoute
-  WorkflowRoute: typeof WorkflowRoute
+  ToolsRoute: typeof ToolsRouteWithChildren
+  WorkflowRoute: typeof WorkflowRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -192,8 +240,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workflow/summary': {
+      id: '/workflow/summary'
+      path: '/summary'
+      fullPath: '/workflow/summary'
+      preLoaderRoute: typeof WorkflowSummaryRouteImport
+      parentRoute: typeof WorkflowRoute
+    }
+    '/tools/rubber-dam': {
+      id: '/tools/rubber-dam'
+      path: '/rubber-dam'
+      fullPath: '/tools/rubber-dam'
+      preLoaderRoute: typeof ToolsRubberDamRouteImport
+      parentRoute: typeof ToolsRoute
+    }
+    '/tools/irrigation': {
+      id: '/tools/irrigation'
+      path: '/irrigation'
+      fullPath: '/tools/irrigation'
+      preLoaderRoute: typeof ToolsIrrigationRouteImport
+      parentRoute: typeof ToolsRoute
+    }
+    '/tools/file-calculator': {
+      id: '/tools/file-calculator'
+      path: '/file-calculator'
+      fullPath: '/tools/file-calculator'
+      preLoaderRoute: typeof ToolsFileCalculatorRouteImport
+      parentRoute: typeof ToolsRoute
+    }
   }
 }
+
+interface ToolsRouteChildren {
+  ToolsFileCalculatorRoute: typeof ToolsFileCalculatorRoute
+  ToolsIrrigationRoute: typeof ToolsIrrigationRoute
+  ToolsRubberDamRoute: typeof ToolsRubberDamRoute
+}
+
+const ToolsRouteChildren: ToolsRouteChildren = {
+  ToolsFileCalculatorRoute: ToolsFileCalculatorRoute,
+  ToolsIrrigationRoute: ToolsIrrigationRoute,
+  ToolsRubberDamRoute: ToolsRubberDamRoute,
+}
+
+const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
+
+interface WorkflowRouteChildren {
+  WorkflowSummaryRoute: typeof WorkflowSummaryRoute
+}
+
+const WorkflowRouteChildren: WorkflowRouteChildren = {
+  WorkflowSummaryRoute: WorkflowSummaryRoute,
+}
+
+const WorkflowRouteWithChildren = WorkflowRoute._addFileChildren(
+  WorkflowRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -202,18 +304,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   SignupRoute: SignupRoute,
-  ToolsRoute: ToolsRoute,
-  WorkflowRoute: WorkflowRoute,
+  ToolsRoute: ToolsRouteWithChildren,
+  WorkflowRoute: WorkflowRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

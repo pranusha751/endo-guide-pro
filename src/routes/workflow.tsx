@@ -334,9 +334,13 @@ function WorkflowPage() {
               <Row label="MAF" value={protocol.maf} />
               <Row label="Clamp" value={toothInfo?.clamp ?? "—"} />
             </Card>
-            <button className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-semibold flex items-center justify-center gap-2 shadow-soft">
+            <Link 
+              to="/workflow/summary" 
+              search={{ tooth, dx: activeDx, files: fileSys }}
+              className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-semibold flex items-center justify-center gap-2 shadow-soft"
+            >
               <Save className="w-5 h-5" /> Save Case & Schedule Follow-up
-            </button>
+            </Link>
             <Link to="/profile" className="block text-center text-sm text-muted-foreground">View saved cases →</Link>
           </>
         )}

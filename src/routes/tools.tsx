@@ -8,9 +8,9 @@ export const Route = createFileRoute("/tools")({
 });
 
 const TOOLS = [
-  { icon: Calculator, title: "File Sequence Calculator", desc: "ProTaper, WaveOne, Hyflex & more", color: "mint" as const },
-  { icon: Droplets, title: "Irrigation Protocol", desc: "NaOCl, EDTA, final rinse", color: "peach" as const },
-  { icon: Shield, title: "Rubber Dam Guide", desc: "Clamp selection by tooth group", color: "mint" as const },
+  { icon: Calculator, title: "File Sequence Calculator", desc: "ProTaper, WaveOne, Hyflex & more", color: "mint" as const, to: "/tools/file-calculator" as const },
+  { icon: Droplets, title: "Irrigation Protocol", desc: "NaOCl, EDTA, final rinse", color: "peach" as const, to: "/tools/irrigation" as const },
+  { icon: Shield, title: "Rubber Dam Guide", desc: "Clamp selection by tooth group", color: "mint" as const, to: "/tools/rubber-dam" as const },
 ];
 
 function ToolsPage() {
@@ -23,7 +23,7 @@ function ToolsPage() {
           return (
             <Link
               key={t.title}
-              to="/workflow"
+              to={t.to}
               className="block rounded-2xl bg-card border border-border p-4 shadow-card active:scale-[0.99] transition-transform"
             >
               <div className="flex items-center gap-4">
