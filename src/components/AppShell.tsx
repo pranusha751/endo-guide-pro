@@ -38,8 +38,7 @@ export function AppShell() {
             })}
           </ul>
         </nav>
-      </div>
-    </div>
+    </PhoneFrame>
   );
 }
 
