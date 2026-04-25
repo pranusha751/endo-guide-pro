@@ -26,6 +26,13 @@ if (fs.existsSync(path.join(distServer, 'server.js'))) {
   );
 }
 
+// Copy server assets (important for TanStack Start routing)
+const serverAssets = path.join(distServer, 'assets');
+if (fs.existsSync(serverAssets)) {
+  fs.cpSync(serverAssets, path.join(funcDir, 'assets'), { recursive: true });
+}
+
+
 // Create index.js wrapper that Vercel can execute
 const wrapper = `
 import { Readable } from 'node:stream';
