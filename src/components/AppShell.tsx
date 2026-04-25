@@ -12,12 +12,12 @@ const tabs = [
 export function AppShell() {
   const location = useLocation();
   return (
-    <div className="min-h-screen bg-background flex justify-center">
-      <div className="w-full max-w-md flex flex-col min-h-screen relative">
-        <main className="flex-1 pb-24 px-5 pt-6">
+    <div className="min-h-screen bg-muted/40 flex justify-center sm:items-center sm:py-8">
+      <div className="w-full sm:w-[390px] sm:h-[844px] sm:max-h-[calc(100vh-4rem)] sm:rounded-[2.5rem] sm:border-[10px] sm:border-foreground/90 sm:shadow-2xl sm:overflow-hidden bg-background flex flex-col min-h-screen sm:min-h-0 relative">
+        <main className="flex-1 pb-24 px-5 pt-6 overflow-y-auto">
           <Outlet />
         </main>
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card/95 backdrop-blur border-t border-border">
+        <nav className="absolute bottom-0 left-0 right-0 bg-card/95 backdrop-blur border-t border-border">
           <ul className="grid grid-cols-5 px-2 py-2">
             {tabs.map((t) => {
               const active = location.pathname.startsWith(t.to);
