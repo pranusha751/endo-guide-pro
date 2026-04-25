@@ -105,6 +105,7 @@ function RouteComponent() {
           </div>
         </CardFooter>
       </Card>
-    </div>
+      </div>
+    </PhoneFrame>
   );
 }

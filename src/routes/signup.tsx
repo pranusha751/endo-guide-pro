@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2 } from "lucide-react";
+import { PhoneFrame } from "@/components/PhoneFrame";
 import { signUpWithPassword } from "@/lib/auth-stub";
 
 export const Route = createFileRoute("/signup")({
@@ -41,8 +42,9 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <Card className="w-full max-w-sm rounded-2xl shadow-sm">
+    <PhoneFrame>
+      <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
+      <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border">
         <CardHeader className="space-y-2 text-center">
           <div className="mb-2 flex justify-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
