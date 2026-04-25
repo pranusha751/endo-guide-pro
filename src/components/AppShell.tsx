@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Activity, BookOpen, Stethoscope, Wrench, User } from "lucide-react";
+import { PhoneFrame } from "./PhoneFrame";
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -12,8 +13,7 @@ const tabs = [
 export function AppShell() {
   const location = useLocation();
   return (
-    <div className="min-h-screen bg-muted/40 flex justify-center sm:items-center sm:py-8">
-      <div className="w-full sm:w-[390px] sm:h-[844px] sm:max-h-[calc(100vh-4rem)] sm:rounded-[2.5rem] sm:border-[10px] sm:border-foreground/90 sm:shadow-2xl sm:overflow-hidden bg-background flex flex-col min-h-screen sm:min-h-0 relative">
+    <PhoneFrame>
         <main className="flex-1 pb-24 px-5 pt-6 overflow-y-auto">
           <Outlet />
         </main>
