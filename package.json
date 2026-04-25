@@ -1,15 +1,4 @@
 {
-<<<<<<< HEAD
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
-=======
   "name": "tanstack_start_ts",
   "private": true,
   "sideEffects": false,
@@ -95,5 +84,4 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1"
   }
->>>>>>> 7b6ff5ecac71620917e53e9766324cccf524c9fd
 }
