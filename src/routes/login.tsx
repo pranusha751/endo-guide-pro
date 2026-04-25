@@ -12,8 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2 } from "lucide-react";
-import { PhoneFrame } from "@/components/PhoneFrame";
 import { signInWithPassword } from "@/lib/auth-stub";
+
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,

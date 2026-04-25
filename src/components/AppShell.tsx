@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import { Activity, BookOpen, Stethoscope, Wrench, User } from "lucide-react";
-import { PhoneFrame } from "./PhoneFrame";
+
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -16,13 +16,13 @@ export function AppShell() {
 
 
   return (
-    <PhoneFrame>
-      <main className={`flex-1 ${!isAuthPage ? "pb-24" : ""} px-5 pt-6 overflow-y-auto`}>
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      <main className={`flex-1 ${!isAuthPage ? "pb-24" : ""} overflow-y-auto w-full max-w-lg mx-auto`}>
         <Outlet />
       </main>
       {!isAuthPage && (
-        <nav className="absolute bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border animate-in slide-in-from-bottom-full duration-300">
-          <ul className="grid grid-cols-5 px-2 py-2">
+        <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50">
+          <ul className="grid grid-cols-5 px-2 py-2 max-w-lg mx-auto">
             {tabs.map((t) => {
               const active = location.pathname.startsWith(t.to);
               const Icon = t.icon;
@@ -45,9 +45,10 @@ export function AppShell() {
           </ul>
         </nav>
       )}
-    </PhoneFrame>
+    </div>
   );
 }
+
 
 
 
