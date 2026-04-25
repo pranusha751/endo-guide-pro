@@ -17,24 +17,41 @@ if (fs.existsSync(distClient)) {
   fs.cpSync(distClient, path.join(vercelOutput, 'static'), { recursive: true });
 }
 
-// Copy server function
+// Copy server file to a local name within the function directory
+const funcDir = path.join(vercelOutput, 'functions', 'index.func');
 if (fs.existsSync(path.join(distServer, 'server.js'))) {
   fs.copyFileSync(
     path.join(distServer, 'server.js'),
-    path.join(vercelOutput, 'functions', 'index.func', 'index.js')
+    path.join(funcDir, 'server.js')
   );
 }
 
+// Create index.js wrapper that Vercel can execute
+const wrapper = `
+import server from './server.js';
+
+export default async function handler(request) {
+  try {
+    return await server.fetch(request);
+  } catch (error) {
+    console.error('SSR Error:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
+}
+`;
+fs.writeFileSync(path.join(funcDir, 'index.js'), wrapper);
+
+
 // Create .vc-config.json for the server function
 const vcConfig = {
-  runtime: 'nodejs20.x',
-  handler: 'index.js',
-  launcherType: 'Nodejs',
+  runtime: 'edge',
+  entrypoint: 'index.js',
 };
 fs.writeFileSync(
-  path.join(vercelOutput, 'functions', 'index.func', '.vc-config.json'),
+  path.join(funcDir, '.vc-config.json'),
   JSON.stringify(vcConfig, null, 2)
 );
+
 
 // Create routing config (config.json)
 const config = {
