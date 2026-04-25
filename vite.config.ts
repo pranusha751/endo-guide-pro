@@ -11,5 +11,11 @@ process.env.NITRO_PRESET = 'vercel';
 process.env.SERVER_PRESET = 'vercel';
 
 export default defineConfig({
-  cloudflare: false
+  cloudflare: false,
+  vite: {
+    ssr: {
+      noExternal: true
+    }
+  }
 });
+
