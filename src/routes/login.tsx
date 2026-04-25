@@ -41,9 +41,9 @@ function RouteComponent() {
   };
 
   return (
-    <PhoneFrame>
-      <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
+    <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
       <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border">
+        {/* ... existing card content ... */}
         <CardHeader className="space-y-2 text-center">
           <div className="mb-2 flex justify-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -105,7 +105,7 @@ function RouteComponent() {
           </div>
         </CardFooter>
       </Card>
-      </div>
-    </PhoneFrame>
+    </div>
   );
 }
+
