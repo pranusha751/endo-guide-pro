@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowRouteImport } from './routes/workflow'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiagnosisRouteImport } from './routes/diagnosis'
 import { Route as AnatomyRouteImport } from './routes/anatomy'
 import { Route as IndexRouteImport } from './routes/index'
@@ -26,9 +28,19 @@ const ToolsRoute = ToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiagnosisRoute = DiagnosisRouteImport.update({
@@ -51,7 +63,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anatomy': typeof AnatomyRoute
   '/diagnosis': typeof DiagnosisRoute
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/signup': typeof SignupRoute
   '/tools': typeof ToolsRoute
   '/workflow': typeof WorkflowRoute
 }
@@ -59,7 +73,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anatomy': typeof AnatomyRoute
   '/diagnosis': typeof DiagnosisRoute
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/signup': typeof SignupRoute
   '/tools': typeof ToolsRoute
   '/workflow': typeof WorkflowRoute
 }
@@ -68,7 +84,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anatomy': typeof AnatomyRoute
   '/diagnosis': typeof DiagnosisRoute
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
+  '/signup': typeof SignupRoute
   '/tools': typeof ToolsRoute
   '/workflow': typeof WorkflowRoute
 }
@@ -78,17 +96,29 @@ export interface FileRouteTypes {
     | '/'
     | '/anatomy'
     | '/diagnosis'
+    | '/login'
     | '/profile'
+    | '/signup'
     | '/tools'
     | '/workflow'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/anatomy' | '/diagnosis' | '/profile' | '/tools' | '/workflow'
+  to:
+    | '/'
+    | '/anatomy'
+    | '/diagnosis'
+    | '/login'
+    | '/profile'
+    | '/signup'
+    | '/tools'
+    | '/workflow'
   id:
     | '__root__'
     | '/'
     | '/anatomy'
     | '/diagnosis'
+    | '/login'
     | '/profile'
+    | '/signup'
     | '/tools'
     | '/workflow'
   fileRoutesById: FileRoutesById
@@ -97,7 +127,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnatomyRoute: typeof AnatomyRoute
   DiagnosisRoute: typeof DiagnosisRoute
+  LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
+  SignupRoute: typeof SignupRoute
   ToolsRoute: typeof ToolsRoute
   WorkflowRoute: typeof WorkflowRoute
 }
@@ -118,11 +150,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diagnosis': {
@@ -153,7 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnatomyRoute: AnatomyRoute,
   DiagnosisRoute: DiagnosisRoute,
+  LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
+  SignupRoute: SignupRoute,
   ToolsRoute: ToolsRoute,
   WorkflowRoute: WorkflowRoute,
 }
