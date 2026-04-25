@@ -12,10 +12,4 @@ process.env.SERVER_PRESET = 'vercel';
 
 export default defineConfig({
   cloudflare: false,
-  vite: {
-    ssr: {
-      noExternal: true
-    }
-  }
 });
-
