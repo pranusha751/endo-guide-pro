@@ -7,18 +7,25 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
 .output
 .vinxi
-.tanstack/**
 .nitro
-*.local
+
+# TanStack — only ignore cache, NOT the generated route tree
+.tanstack/cache
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Local env files
+*.local
 
 # Editor directories and files
 .vscode/*
