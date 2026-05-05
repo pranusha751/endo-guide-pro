@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2 } from "lucide-react";
-import { signInWithPassword, signInWithGoogle, sendMagicLink } from "@/lib/auth-stub";
+import { signInWithPassword, signInWithGoogle } from "@/lib/auth-stub";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -42,22 +42,17 @@ function RouteComponent() {
   };
 
   const handleGoogleLogin = async () => {
-    if (!email) {
-      setError("Please enter your email first to sign in with Google.");
-      return;
-    }
     setError(null);
     setSuccessMsg(null);
     setLoading(true);
 
-    // As requested, clicking Google Sign-in triggers the email verification simulation
-    const { error: authError } = await sendMagicLink(email);
+    const { user, error: authError } = await signInWithGoogle();
     setLoading(false);
 
-    if (authError) {
-      setError(authError);
+    if (authError || !user) {
+      setError(authError ?? "Unable to sign in with Google.");
     } else {
-      setSuccessMsg("Verification sent! Check your browser console for the simulated email link.");
+      navigate({ to: "/workflow" });
     }
   };
 
