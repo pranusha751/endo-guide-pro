@@ -6,6 +6,7 @@ import { saveCase } from "@/lib/cases";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Calendar, Save, Share2, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -37,6 +38,37 @@ function SummaryPage() {
       status: "Completed",
     });
     navigate({ to: "/profile" });
+  };
+
+  const handleShare = async () => {
+    const summaryText = `Endo Guide Pro Case Summary\n\nTooth: ${tooth} — ${toothInfo?.name}\nDiagnosis: ${dxInfo?.label ?? "—"}\nAccess: ${toothInfo?.accessShape ?? "—"}\nFile System: ${files}\nTarget MAF: ${protocol?.maf ?? "—"}\nClamp: ${toothInfo?.clamp ?? "—"}\n\nGenerated via Endo Guide Pro`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Endodontic Record — Tooth ${tooth}`,
+          text: summaryText,
+          url: window.location.href,
+        });
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          toast.error("Sharing failed");
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(summaryText);
+        toast.success("Summary copied to clipboard!");
+      } catch (err) {
+        toast.error("Failed to copy summary");
+      }
+    }
+  };
+
+  const handleFollowUp = () => {
+    toast.info("Follow-up scheduling coming soon!", {
+      description: "This feature is currently in development.",
+    });
   };
 
   return (
@@ -80,6 +112,7 @@ function SummaryPage() {
         <div className="grid grid-cols-2 gap-3">
           <Button
             variant="outline"
+            onClick={handleShare}
             className="rounded-2xl h-auto py-4 flex flex-col gap-1 border-border bg-card shadow-card"
           >
             <Share2 className="w-5 h-5 text-primary" />
@@ -87,6 +120,7 @@ function SummaryPage() {
           </Button>
           <Button
             variant="outline"
+            onClick={handleFollowUp}
             className="rounded-2xl h-auto py-4 flex flex-col gap-1 border-border bg-card shadow-card"
           >
             <Calendar className="w-5 h-5 text-peach-foreground" />
