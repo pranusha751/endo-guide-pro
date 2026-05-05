@@ -7,14 +7,9 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Force Vercel compatibility
-process.env.NITRO_PRESET = 'vercel';
-process.env.SERVER_PRESET = 'vercel';
+process.env.NITRO_PRESET = "vercel";
+process.env.SERVER_PRESET = "vercel";
 
 export default defineConfig({
   cloudflare: false,
-  vite: {
-    ssr: {
-      noExternal: true
-    }
-  }
-});
+});

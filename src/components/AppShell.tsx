@@ -1,5 +1,6 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Activity, BookOpen, Stethoscope, Wrench, User } from "lucide-react";
+import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { Activity, BookOpen, Stethoscope, Wrench, User, Bell, LogOut } from "lucide-react";
+import { signOut } from "@/lib/auth-stub";
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -30,10 +31,11 @@ export function AppShell() {
                 <li key={t.to}>
                   <Link
                     to={t.to}
-                    className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[11px] font-medium transition-all ${active
-                      ? "text-primary-foreground bg-primary shadow-sm scale-105"
-                      : "text-muted-foreground hover:text-foreground"
-                      }`}
+                    className={`flex flex-col items-center gap-1 py-2 rounded-xl text-[11px] font-medium transition-all ${
+                      active
+                        ? "text-primary-foreground bg-primary shadow-sm scale-105"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     <Icon className="w-5 h-5" />
                     {t.label}
@@ -49,10 +51,29 @@ export function AppShell() {
 }
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const navigate = useNavigate();
   return (
-    <header className="mb-6 pt-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-      {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+    <header className="mb-6 pt-6 flex items-start justify-between">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors relative">
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-background"></span>
+        </button>
+        <button
+          className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors"
+          onClick={async () => {
+            await signOut();
+            navigate({ to: "/login" });
+          }}
+          title="Log out"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
+      </div>
     </header>
   );
 }

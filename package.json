@@ -4,6 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
+    "start": "vite dev",
     "dev": "vite dev",
     "build": "cross-env NITRO_PRESET=node-server vite build",
     "postbuild": "node scripts/move-output.js",

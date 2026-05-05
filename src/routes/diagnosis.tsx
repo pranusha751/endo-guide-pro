@@ -13,7 +13,10 @@ function DiagnosisPage() {
 
   return (
     <div>
-      <PageHeader title="Pulp Diagnosis Matrix" subtitle="Tap a row to highlight — based on AAE classification" />
+      <PageHeader
+        title="Pulp Diagnosis Matrix"
+        subtitle="Tap a row to highlight — based on AAE classification"
+      />
 
       <div className="space-y-3">
         {DIAGNOSES.map((dx) => {
@@ -26,10 +29,14 @@ function DiagnosisPage() {
                 active ? `bg-${dx.color} border-transparent` : "bg-card border-border"
               }`}
             >
-              <div className={`text-base font-semibold ${active ? `text-${dx.color}-foreground` : ""}`}>
+              <div
+                className={`text-base font-semibold ${active ? `text-${dx.color}-foreground` : ""}`}
+              >
                 {dx.label}
               </div>
-              <div className={`grid grid-cols-1 gap-1.5 mt-3 text-xs ${active ? `text-${dx.color}-foreground/90` : "text-muted-foreground"}`}>
+              <div
+                className={`grid grid-cols-1 gap-1.5 mt-3 text-xs ${active ? `text-${dx.color}-foreground/90` : "text-muted-foreground"}`}
+              >
                 <Row label="Symptoms" value={dx.symptoms} />
                 <Row label="Pulp test" value={dx.pulpTests} />
                 <Row label="Radiograph" value={dx.radiograph} />

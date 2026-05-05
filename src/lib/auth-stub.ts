@@ -35,10 +35,7 @@ export function getCurrentUser(): AuthUser | null {
 
 // TODO(supabase): replace with
 //   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-export async function signInWithPassword(
-  email: string,
-  password: string,
-): Promise<AuthResponse> {
+export async function signInWithPassword(email: string, password: string): Promise<AuthResponse> {
   await new Promise((r) => setTimeout(r, 400));
   if (!email || !password) {
     return { user: null, error: "Email and password are required." };
@@ -76,6 +73,32 @@ export async function signUpWithPassword(
 // TODO(supabase): replace with `await supabase.auth.signOut();`
 export async function signOut(): Promise<void> {
   persist(null);
+}
+
+// TODO(supabase): replace with supabase.auth.signInWithOAuth({ provider: 'google' })
+export async function signInWithGoogle(email?: string): Promise<AuthResponse> {
+  await new Promise((r) => setTimeout(r, 600));
+  const userEmail = email || "doctor@google.com";
+  const user: AuthUser = {
+    id: crypto.randomUUID(),
+    email: userEmail,
+    fullName: `Dr. ${userEmail.split("@")[0]}`,
+  };
+  persist(user);
+  return { user, error: null };
+}
+
+// TODO(supabase): replace with supabase.auth.signInWithOtp({ email })
+export async function sendMagicLink(email: string): Promise<{ error: string | null }> {
+  await new Promise((r) => setTimeout(r, 600));
+  if (!email) return { error: "Email is required." };
+
+  // Simulate sending email
+  console.log(
+    `[MAGIC LINK SENT] Click here to verify: http://localhost:8081/verify?email=${encodeURIComponent(email)}`,
+  );
+
+  return { error: null };
 }
 
 // TODO(supabase): replace with

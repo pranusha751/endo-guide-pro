@@ -1,9 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
-  TEETH, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem,
-  DIAGNOSES, IRRIGATION_STEPS, IRRIGATION_SAFETY,
-  ACCESS_GUIDES, BUR_RECOMMENDATIONS, MAF_GUIDANCE, RUBBER_DAM_TIPS,
+  TEETH,
+  FILE_PROTOCOLS,
+  FILE_SYSTEMS,
+  type FileSystem,
+  DIAGNOSES,
+  IRRIGATION_STEPS,
+  IRRIGATION_SAFETY,
+  ACCESS_GUIDES,
+  BUR_RECOMMENDATIONS,
+  MAF_GUIDANCE,
+  RUBBER_DAM_TIPS,
 } from "@/lib/endo-data";
 import { PageHeader } from "@/components/AppShell";
 import { Check, ChevronLeft, ChevronRight, AlertTriangle, Save } from "lucide-react";
@@ -12,11 +20,11 @@ function accessGroupFor(fdi: string, group: "anterior" | "premolar" | "molar") {
   const upper = fdi.startsWith("1") || fdi.startsWith("2");
   if (group === "anterior") {
     // Canines get their own row in the spec for maxillary
-    if (upper && (fdi.endsWith("3"))) return "Max Canine" as const;
-    return upper ? "Max Incisors" as const : "Mand Incisors" as const;
+    if (upper && fdi.endsWith("3")) return "Max Canine" as const;
+    return upper ? ("Max Incisors" as const) : ("Mand Incisors" as const);
   }
-  if (group === "premolar") return upper ? "Max Premolars" as const : "Mand Premolars" as const;
-  return upper ? "Max Molars" as const : "Mand Molars" as const;
+  if (group === "premolar") return upper ? ("Max Premolars" as const) : ("Mand Premolars" as const);
+  return upper ? ("Max Molars" as const) : ("Mand Molars" as const);
 }
 
 export const Route = createFileRoute("/workflow")({
@@ -30,8 +38,15 @@ export const Route = createFileRoute("/workflow")({
 });
 
 const STEPS = [
-  "Tooth", "Symptoms", "Pulp Tests", "Diagnosis",
-  "Access", "Files", "Irrigation", "Rubber Dam", "Summary",
+  "Tooth",
+  "Symptoms",
+  "Pulp Tests",
+  "Diagnosis",
+  "Access",
+  "Files",
+  "Irrigation",
+  "Rubber Dam",
+  "Summary",
 ];
 
 interface Symptoms {
@@ -54,10 +69,18 @@ function WorkflowPage() {
   const [step, setStep] = useState(0);
   const [tooth, setTooth] = useState("16");
   const [symptoms, setSymptoms] = useState<Symptoms>({
-    spontaneous: false, cold: "none", biting: false, swelling: "none", sinus: false,
+    spontaneous: false,
+    cold: "none",
+    biting: false,
+    swelling: "none",
+    sinus: false,
   });
   const [tests, setTests] = useState<PulpTests>({
-    cold: "Normal", ept: "Normal", percussion: "Negative", palpation: "Negative", radiograph: "Normal PDL",
+    cold: "Normal",
+    ept: "Normal",
+    percussion: "Negative",
+    palpation: "Negative",
+    radiograph: "Normal PDL",
   });
   const [diagnosis, setDiagnosis] = useState<string>("");
   const [fileSys, setFileSys] = useState<FileSystem>("ProTaper Gold");
@@ -71,7 +94,11 @@ function WorkflowPage() {
     if (symptoms.swelling === "diffuse") return "acute-abscess";
     if (symptoms.sinus) return "chronic-abscess";
     if (symptoms.swelling === "localized" && symptoms.spontaneous) return "acute-abscess";
-    if (tests.percussion !== "Negative" && (tests.cold === "No response" || tests.radiograph === "PA radiolucency")) return "apical";
+    if (
+      tests.percussion !== "Negative" &&
+      (tests.cold === "No response" || tests.radiograph === "PA radiolucency")
+    )
+      return "apical";
     if (tests.cold === "No response" && tests.ept === "No response") return "necrosis";
     if (symptoms.cold === "lingering" || symptoms.spontaneous) return "irreversible-symp";
     if (symptoms.cold === "brief") return "reversible";
@@ -86,7 +113,10 @@ function WorkflowPage() {
 
   return (
     <div>
-      <PageHeader title="Endodontic Workflow" subtitle={`Step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`} />
+      <PageHeader
+        title="Endodontic Workflow"
+        subtitle={`Step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`}
+      />
 
       {/* Progress */}
       <div className="flex gap-1 mb-6">
@@ -110,7 +140,9 @@ function WorkflowPage() {
               className="w-full rounded-2xl bg-input/40 border border-border px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {TEETH.map((t) => (
-                <option key={t.fdi} value={t.fdi}>{t.fdi} — {t.name}</option>
+                <option key={t.fdi} value={t.fdi}>
+                  {t.fdi} — {t.name}
+                </option>
               ))}
             </select>
 
@@ -127,28 +159,77 @@ function WorkflowPage() {
 
         {step === 1 && (
           <Card title="Symptoms">
-            <Toggle label="Spontaneous pain" value={symptoms.spontaneous} onChange={(v) => setSymptoms({ ...symptoms, spontaneous: v })} />
-            <SegGroup label="Pain to cold" value={symptoms.cold} options={["none", "brief", "lingering"]} onChange={(v) => setSymptoms({ ...symptoms, cold: v as Symptoms["cold"] })} />
-            <Toggle label="Pain on biting" value={symptoms.biting} onChange={(v) => setSymptoms({ ...symptoms, biting: v })} />
-            <SegGroup label="Swelling" value={symptoms.swelling} options={["none", "localized", "diffuse"]} onChange={(v) => setSymptoms({ ...symptoms, swelling: v as Symptoms["swelling"] })} />
-            <Toggle label="Sinus tract" value={symptoms.sinus} onChange={(v) => setSymptoms({ ...symptoms, sinus: v })} />
+            <Toggle
+              label="Spontaneous pain"
+              value={symptoms.spontaneous}
+              onChange={(v) => setSymptoms({ ...symptoms, spontaneous: v })}
+            />
+            <SegGroup
+              label="Pain to cold"
+              value={symptoms.cold}
+              options={["none", "brief", "lingering"]}
+              onChange={(v) => setSymptoms({ ...symptoms, cold: v as Symptoms["cold"] })}
+            />
+            <Toggle
+              label="Pain on biting"
+              value={symptoms.biting}
+              onChange={(v) => setSymptoms({ ...symptoms, biting: v })}
+            />
+            <SegGroup
+              label="Swelling"
+              value={symptoms.swelling}
+              options={["none", "localized", "diffuse"]}
+              onChange={(v) => setSymptoms({ ...symptoms, swelling: v as Symptoms["swelling"] })}
+            />
+            <Toggle
+              label="Sinus tract"
+              value={symptoms.sinus}
+              onChange={(v) => setSymptoms({ ...symptoms, sinus: v })}
+            />
           </Card>
         )}
 
         {step === 2 && (
           <Card title="Pulp & Periapical Tests">
-            <SelectField label="Cold test" value={tests.cold} options={["Normal", "Brief response", "Lingering response", "No response"]} onChange={(v) => setTests({ ...tests, cold: v })} />
-            <SelectField label="EPT response" value={tests.ept} options={["Normal", "Reduced", "Heightened", "No response"]} onChange={(v) => setTests({ ...tests, ept: v })} />
-            <SelectField label="Percussion" value={tests.percussion} options={["Negative", "Mild", "Severe"]} onChange={(v) => setTests({ ...tests, percussion: v })} />
-            <SelectField label="Palpation" value={tests.palpation} options={["Negative", "Tender", "Swelling"]} onChange={(v) => setTests({ ...tests, palpation: v })} />
-            <SelectField label="Radiograph findings" value={tests.radiograph} options={["Normal PDL", "Widened PDL", "PA radiolucency", "Resorption"]} onChange={(v) => setTests({ ...tests, radiograph: v })} />
+            <SelectField
+              label="Cold test"
+              value={tests.cold}
+              options={["Normal", "Brief response", "Lingering response", "No response"]}
+              onChange={(v) => setTests({ ...tests, cold: v })}
+            />
+            <SelectField
+              label="EPT response"
+              value={tests.ept}
+              options={["Normal", "Reduced", "Heightened", "No response"]}
+              onChange={(v) => setTests({ ...tests, ept: v })}
+            />
+            <SelectField
+              label="Percussion"
+              value={tests.percussion}
+              options={["Negative", "Mild", "Severe"]}
+              onChange={(v) => setTests({ ...tests, percussion: v })}
+            />
+            <SelectField
+              label="Palpation"
+              value={tests.palpation}
+              options={["Negative", "Tender", "Swelling"]}
+              onChange={(v) => setTests({ ...tests, palpation: v })}
+            />
+            <SelectField
+              label="Radiograph findings"
+              value={tests.radiograph}
+              options={["Normal PDL", "Widened PDL", "PA radiolucency", "Resorption"]}
+              onChange={(v) => setTests({ ...tests, radiograph: v })}
+            />
           </Card>
         )}
 
         {step === 3 && (
           <>
             <Card title="Suggested Diagnosis">
-              <div className={`rounded-2xl p-4 bg-${dxInfo?.color} text-${dxInfo?.color}-foreground`}>
+              <div
+                className={`rounded-2xl p-4 bg-${dxInfo?.color} text-${dxInfo?.color}-foreground`}
+              >
                 <div className="text-xs uppercase tracking-wide opacity-70">Most likely</div>
                 <div className="text-xl font-semibold mt-1">{dxInfo?.label}</div>
                 <p className="text-sm mt-2 opacity-90">{dxInfo?.treatment}</p>
@@ -161,7 +242,9 @@ function WorkflowPage() {
                     key={d.id}
                     onClick={() => setDiagnosis(d.id)}
                     className={`w-full text-left rounded-2xl px-4 py-3 border transition-all ${
-                      activeDx === d.id ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"
+                      activeDx === d.id
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-card hover:border-primary/40"
                     }`}
                   >
                     <div className="font-medium text-sm">{d.label}</div>
@@ -173,41 +256,45 @@ function WorkflowPage() {
           </>
         )}
 
-        {step === 4 && toothInfo && (() => {
-          const guide = ACCESS_GUIDES.find((g) => g.group === accessGroupFor(toothInfo.fdi, toothInfo.group))!;
-          return (
-            <>
-              <Card title="Access Cavity Design">
-                <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
-                  <div className="text-center">
-                    <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
-                    <div className="text-sm text-mint-foreground/80 mt-1">{guide.shape}</div>
+        {step === 4 &&
+          toothInfo &&
+          (() => {
+            const guide = ACCESS_GUIDES.find(
+              (g) => g.group === accessGroupFor(toothInfo.fdi, toothInfo.group),
+            )!;
+            return (
+              <>
+                <Card title="Access Cavity Design">
+                  <div className="aspect-square rounded-2xl bg-mint/40 flex items-center justify-center mb-4 border border-border">
+                    <div className="text-center">
+                      <div className="text-5xl font-bold text-mint-foreground">{toothInfo.fdi}</div>
+                      <div className="text-sm text-mint-foreground/80 mt-1">{guide.shape}</div>
+                    </div>
                   </div>
-                </div>
-                <Stat label="Tooth group" value={guide.group} />
-                <div className="h-2" />
-                <Stat label="Access shape" value={guide.shape} />
-                <div className="h-2" />
-                <Stat label="Bur entry point" value={guide.entry} />
-                <div className="h-2" />
-                <Stat label="Key landmarks" value={guide.landmarks} />
-              </Card>
-              <Card title="Bur Recommendations">
-                <ul className="text-sm space-y-2">
-                  {BUR_RECOMMENDATIONS.map((b) => (
-                    <li key={b.phase}>
-                      <span className="font-medium">{b.phase}:</span>{" "}
-                      <span className="text-muted-foreground">{b.bur}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-              <Card title="Common Errors">
-                <p className="text-sm text-muted-foreground">{guide.errors}</p>
-              </Card>
-            </>
-          );
-        })()}
+                  <Stat label="Tooth group" value={guide.group} />
+                  <div className="h-2" />
+                  <Stat label="Access shape" value={guide.shape} />
+                  <div className="h-2" />
+                  <Stat label="Bur entry point" value={guide.entry} />
+                  <div className="h-2" />
+                  <Stat label="Key landmarks" value={guide.landmarks} />
+                </Card>
+                <Card title="Bur Recommendations">
+                  <ul className="text-sm space-y-2">
+                    {BUR_RECOMMENDATIONS.map((b) => (
+                      <li key={b.phase}>
+                        <span className="font-medium">{b.phase}:</span>{" "}
+                        <span className="text-muted-foreground">{b.bur}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+                <Card title="Common Errors">
+                  <p className="text-sm text-muted-foreground">{guide.errors}</p>
+                </Card>
+              </>
+            );
+          })()}
 
         {step === 5 && (
           <>
@@ -218,12 +305,17 @@ function WorkflowPage() {
                 onChange={(e) => setFileSys(e.target.value as FileSystem)}
                 className="w-full rounded-2xl bg-input/40 border border-border px-4 py-3"
               >
-                {FILE_SYSTEMS.map((f) => <option key={f}>{f}</option>)}
+                {FILE_SYSTEMS.map((f) => (
+                  <option key={f}>{f}</option>
+                ))}
               </select>
               <div className="h-3" />
               <Label>Initial binding file size (#{bindingSize})</Label>
               <input
-                type="range" min={8} max={40} step={1}
+                type="range"
+                min={8}
+                max={40}
+                step={1}
                 value={bindingSize}
                 onChange={(e) => setBindingSize(parseInt(e.target.value))}
                 className="w-full accent-primary"
@@ -252,7 +344,8 @@ function WorkflowPage() {
                 ))}
               </ul>
               <p className="text-xs text-muted-foreground mt-3">
-                Minimum recommended apical preparation for adequate irrigation: ISO #25 with ≥0.04 taper.
+                Minimum recommended apical preparation for adequate irrigation: ISO #25 with ≥0.04
+                taper.
               </p>
             </Card>
           </>
@@ -272,15 +365,19 @@ function WorkflowPage() {
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-6 h-6 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
-                        done ? "bg-primary border-primary" : "border-border"
-                      }`}>
+                      <div
+                        className={`w-6 h-6 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
+                          done ? "bg-primary border-primary" : "border-border"
+                        }`}
+                      >
                         {done && <Check className="w-4 h-4 text-primary-foreground" />}
                       </div>
                       <div className="flex-1">
                         <div className="font-medium text-sm flex items-center gap-2">
                           {s.label}
-                          {s.warning && <AlertTriangle className="w-4 h-4 text-warning-foreground" />}
+                          {s.warning && (
+                            <AlertTriangle className="w-4 h-4 text-warning-foreground" />
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">
                           {s.concentration} · {s.volume} · {s.time}
@@ -296,7 +393,9 @@ function WorkflowPage() {
                 <AlertTriangle className="w-4 h-4" /> Safety notes
               </div>
               <ul className="space-y-1.5 list-disc pl-4">
-                {IRRIGATION_SAFETY.map((s) => <li key={s}>{s}</li>)}
+                {IRRIGATION_SAFETY.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
               </ul>
             </div>
           </Card>
@@ -306,8 +405,12 @@ function WorkflowPage() {
           <>
             <Card title="Rubber Dam Setup">
               <div className="rounded-2xl bg-peach p-4 mb-4">
-                <div className="text-xs uppercase tracking-wide text-peach-foreground/70">Tooth group</div>
-                <div className="text-lg font-semibold capitalize text-peach-foreground">{toothInfo.group}</div>
+                <div className="text-xs uppercase tracking-wide text-peach-foreground/70">
+                  Tooth group
+                </div>
+                <div className="text-lg font-semibold capitalize text-peach-foreground">
+                  {toothInfo.group}
+                </div>
               </div>
               <Stat label="Recommended clamp" value={toothInfo.clamp} />
             </Card>
@@ -334,14 +437,16 @@ function WorkflowPage() {
               <Row label="MAF" value={protocol.maf} />
               <Row label="Clamp" value={toothInfo?.clamp ?? "—"} />
             </Card>
-            <Link 
-              to="/workflow/summary" 
+            <Link
+              to="/workflow/summary"
               search={{ tooth, dx: activeDx, files: fileSys }}
               className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-semibold flex items-center justify-center gap-2 shadow-soft"
             >
               <Save className="w-5 h-5" /> Save Case & Schedule Follow-up
             </Link>
-            <Link to="/profile" className="block text-center text-sm text-muted-foreground">View saved cases →</Link>
+            <Link to="/profile" className="block text-center text-sm text-muted-foreground">
+              View saved cases →
+            </Link>
           </>
         )}
       </div>
@@ -370,7 +475,9 @@ function WorkflowPage() {
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl bg-card border border-border p-5 shadow-card">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">{title}</h3>
+      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+        {title}
+      </h3>
       {children}
     </section>
   );
@@ -383,7 +490,9 @@ function Label({ children }: { children: React.ReactNode }) {
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl bg-mint/30 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-wide text-mint-foreground/70 font-medium">{label}</div>
+      <div className="text-[10px] uppercase tracking-wide text-mint-foreground/70 font-medium">
+        {label}
+      </div>
       <div className="text-sm font-semibold text-mint-foreground mt-0.5">{value}</div>
     </div>
   );
@@ -398,7 +507,15 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-border last:border-0">
       <span className="text-sm">{label}</span>
@@ -406,13 +523,25 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         onClick={() => onChange(!value)}
         className={`w-12 h-7 rounded-full transition-colors relative ${value ? "bg-primary" : "bg-muted"}`}
       >
-        <span className={`absolute top-1 w-5 h-5 rounded-full bg-card transition-all ${value ? "left-6" : "left-1"}`} />
+        <span
+          className={`absolute top-1 w-5 h-5 rounded-full bg-card transition-all ${value ? "left-6" : "left-1"}`}
+        />
       </button>
     </div>
   );
 }
 
-function SegGroup({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+function SegGroup({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="py-3 border-b border-border last:border-0">
       <div className="text-sm mb-2">{label}</div>
@@ -422,7 +551,9 @@ function SegGroup({ label, value, options, onChange }: { label: string; value: s
             key={o}
             onClick={() => onChange(o)}
             className={`flex-1 capitalize text-xs py-2 rounded-xl border transition-all ${
-              value === o ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground"
+              value === o
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card border-border text-muted-foreground"
             }`}
           >
             {o}
@@ -433,7 +564,17 @@ function SegGroup({ label, value, options, onChange }: { label: string; value: s
   );
 }
 
-function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="py-2">
       <Label>{label}</Label>
@@ -442,7 +583,9 @@ function SelectField({ label, value, options, onChange }: { label: string; value
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-2xl bg-input/40 border border-border px-4 py-3 text-sm"
       >
-        {options.map((o) => <option key={o}>{o}</option>)}
+        {options.map((o) => (
+          <option key={o}>{o}</option>
+        ))}
       </select>
     </div>
   );
@@ -451,11 +594,15 @@ function SelectField({ label, value, options, onChange }: { label: string; value
 function Section({ heading, items }: { heading: string; items: string[] }) {
   return (
     <div className="mb-3">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{heading}</div>
+      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+        {heading}
+      </div>
       <ol className="space-y-1.5">
         {items.map((item, i) => (
           <li key={i} className="text-sm flex gap-2">
-            <span className="w-5 h-5 rounded-full bg-mint text-mint-foreground text-[10px] font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
+            <span className="w-5 h-5 rounded-full bg-mint text-mint-foreground text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+              {i + 1}
+            </span>
             {item}
           </li>
         ))}

@@ -38,7 +38,9 @@ function AnatomyPage() {
             key={g}
             onClick={() => setGroup(g)}
             className={`flex-1 capitalize text-xs py-2 rounded-xl border transition-all ${
-              group === g ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground"
+              group === g
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card border-border text-muted-foreground"
             }`}
           >
             {g}
@@ -66,7 +68,9 @@ function AnatomyPage() {
           </article>
         ))}
         {filtered.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-12">No teeth match your search.</p>
+          <p className="text-center text-sm text-muted-foreground py-12">
+            No teeth match your search.
+          </p>
         )}
       </div>
     </div>
