@@ -89,7 +89,7 @@ fs.writeFileSync(path.join(funcDir, "package.json"), JSON.stringify({ type: "mod
 // Create routing config (config.json)
 const config = {
   version: 3,
-  routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "index" }],
+  routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/index" }],
 };
 fs.writeFileSync(path.join(vercelOutput, "config.json"), JSON.stringify(config, null, 2));
 
