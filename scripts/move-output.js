@@ -76,13 +76,15 @@ export default async function handler(req, res) {
 `;
 fs.writeFileSync(path.join(funcDir, "index.js"), wrapper);
 
-// Create .vc-config.json for the server function
 const vcConfig = {
   runtime: "nodejs20.x",
   handler: "index.js",
   launcherType: "Nodejs",
 };
 fs.writeFileSync(path.join(funcDir, ".vc-config.json"), JSON.stringify(vcConfig, null, 2));
+
+// Force ESM in Vercel function runtime
+fs.writeFileSync(path.join(funcDir, "package.json"), JSON.stringify({ type: "module" }, null, 2));
 
 // Create routing config (config.json)
 const config = {
