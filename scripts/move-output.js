@@ -74,11 +74,11 @@ export default async function handler(req, res) {
   }
 }
 `;
-fs.writeFileSync(path.join(funcDir, "index.js"), wrapper);
+fs.writeFileSync(path.join(funcDir, "index.mjs"), wrapper);
 
 const vcConfig = {
   runtime: "nodejs20.x",
-  handler: "index.js",
+  handler: "index.mjs",
   launcherType: "Nodejs",
 };
 fs.writeFileSync(path.join(funcDir, ".vc-config.json"), JSON.stringify(vcConfig, null, 2));
