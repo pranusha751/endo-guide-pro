@@ -82,8 +82,19 @@ const vcConfig = {
 };
 fs.writeFileSync(path.join(funcDir, ".vc-config.json"), JSON.stringify(vcConfig, null, 2));
 
-// Force ESM in Vercel function runtime
-fs.writeFileSync(path.join(funcDir, "package.json"), JSON.stringify({ type: "module" }, null, 2));
+// Force ESM and include dependencies in Vercel function runtime
+const rootPackage = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
+fs.writeFileSync(
+  path.join(funcDir, "package.json"),
+  JSON.stringify(
+    {
+      type: "module",
+      dependencies: rootPackage.dependencies,
+    },
+    null,
+    2,
+  ),
+);
 
 // Create routing config (config.json)
 const config = {
