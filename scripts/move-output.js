@@ -14,10 +14,17 @@ if (fs.existsSync(vercelOutput)) fs.rmSync(vercelOutput, { recursive: true });
 fs.mkdirSync(funcDir, { recursive: true });
 fs.mkdirSync(staticDir, { recursive: true });
 
-// 2. Copy Static Assets
+// 2. Copy Static Assets (Client)
 const distClient = path.join(process.cwd(), "dist", "client");
 if (fs.existsSync(distClient)) {
   fs.cpSync(distClient, staticDir, { recursive: true });
+}
+
+// 3. Copy Server Assets (Manifests, etc) into the function folder
+const distServer = path.join(process.cwd(), "dist", "server");
+const serverAssets = path.join(distServer, "assets");
+if (fs.existsSync(serverAssets)) {
+  fs.cpSync(serverAssets, path.join(funcDir, "assets"), { recursive: true });
 }
 
 // 3. Create SSR Wrapper
@@ -68,8 +75,8 @@ export default async function handler(req, res) {
 const tempWrapper = path.join(funcDir, "wrapper.mjs");
 fs.writeFileSync(tempWrapper, wrapper);
 
+
 // Copy server.js for bundling
-const distServer = path.join(process.cwd(), "dist", "server");
 fs.copyFileSync(path.join(distServer, "server.js"), path.join(funcDir, "server.js"));
 
 // 4. Bundle
