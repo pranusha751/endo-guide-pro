@@ -35,24 +35,21 @@ import { Readable } from 'node:stream';
 import server from './server.js';
 
 export default async function handler(req, res) {
-  // Convert Node.js req to Web standard Request
-  const protocol = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
-  const urlPath = req.url || '/';
-  const url = new URL(urlPath, \`\${protocol}://\${host}\`);
-  
-  const request = new Request(url, {
-    method: req.method || 'GET',
-    headers: req.headers,
-    body: ['GET', 'HEAD'].includes(req.method || 'GET') ? null : Readable.toWeb(req),
-    // @ts-ignore
-    duplex: 'half'
-  });
-
   try {
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+    const url = new URL(req.url || '/', \`\${protocol}://\${host}\`);
+    
+    const request = new Request(url, {
+      method: req.method || 'GET',
+      headers: req.headers,
+      body: ['GET', 'HEAD'].includes(req.method || 'GET') ? undefined : Readable.toWeb(req),
+      // @ts-ignore
+      duplex: 'half'
+    });
+
     const response = await server.fetch(request);
     
-    // Send response back to Node.js res
     res.statusCode = response.status;
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
@@ -68,9 +65,11 @@ export default async function handler(req, res) {
     }
     res.end();
   } catch (error) {
-    console.error('SSR Error:', error);
-    res.statusCode = 500;
-    res.end('Internal Server Error');
+    console.error('SSR Critical Error:', error);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.end('Internal Server Error: ' + error.message);
+    }
   }
 }
 `;
