@@ -6,6 +6,9 @@ const vercelOutput = path.join(process.cwd(), ".vercel", "output");
 const funcDir = path.join(vercelOutput, "functions", "render.func");
 const staticDir = path.join(vercelOutput, "static");
 
+console.log("--- Starting move-output.js ---");
+console.log(`Working Directory: ${process.cwd()}`);
+
 // 1. Clean and Create Dirs
 if (fs.existsSync(vercelOutput)) fs.rmSync(vercelOutput, { recursive: true });
 fs.mkdirSync(funcDir, { recursive: true });
