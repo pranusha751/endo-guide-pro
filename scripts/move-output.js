@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { buildSync } from "esbuild";
 
 const distClient = path.join(process.cwd(), "dist", "client");
 const distServer = path.join(process.cwd(), "dist", "server");
@@ -73,7 +74,25 @@ export default async function handler(req, res) {
   }
 }
 `;
+
+// ...
 fs.writeFileSync(path.join(funcDir, "index.mjs"), wrapper);
+
+// Bundle the function using esbuild to inline all dependencies
+console.log("Bundling function with esbuild...");
+buildSync({
+  entryPoints: [path.join(funcDir, "index.mjs")],
+  bundle: true,
+  outfile: path.join(funcDir, "index.mjs"),
+  platform: "node",
+  format: "esm",
+  target: "node20",
+  allowOverwrite: true,
+  external: ["node:*"],
+  banner: {
+    js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+  },
+});
 
 const vcConfig = {
   runtime: "nodejs20.x",
@@ -82,20 +101,6 @@ const vcConfig = {
 };
 fs.writeFileSync(path.join(funcDir, ".vc-config.json"), JSON.stringify(vcConfig, null, 2));
 
-// Force ESM and include dependencies in Vercel function runtime
-const rootPackage = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
-fs.writeFileSync(
-  path.join(funcDir, "package.json"),
-  JSON.stringify(
-    {
-      type: "module",
-      dependencies: rootPackage.dependencies,
-    },
-    null,
-    2,
-  ),
-);
-
 // Create routing config (config.json)
 const config = {
   version: 3,
@@ -103,4 +108,4 @@ const config = {
 };
 fs.writeFileSync(path.join(vercelOutput, "config.json"), JSON.stringify(config, null, 2));
 
-console.log("Successfully created .vercel/output structure");
+console.log("Successfully created and bundled .vercel/output structure");
