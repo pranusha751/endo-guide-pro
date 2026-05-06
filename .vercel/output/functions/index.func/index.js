@@ -4,14 +4,15 @@ import server from './server.js';
 
 export default async function handler(req, res) {
   // Convert Node.js req to Web standard Request
-  const protocol = req.headers['x-forwarded-proto'] || 'http';
-  const host = req.headers.host;
-  const url = new URL(req.url, `${protocol}://${host}`);
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+  const urlPath = req.url || '/';
+  const url = new URL(urlPath, `${protocol}://${host}`);
   
   const request = new Request(url, {
-    method: req.method,
+    method: req.method || 'GET',
     headers: req.headers,
-    body: ['GET', 'HEAD'].includes(req.method) ? null : Readable.toWeb(req),
+    body: ['GET', 'HEAD'].includes(req.method || 'GET') ? null : Readable.toWeb(req),
     // @ts-ignore
     duplex: 'half'
   });

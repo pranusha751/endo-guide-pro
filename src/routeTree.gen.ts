@@ -22,6 +22,7 @@ import { Route as WorkflowSummaryRouteImport } from './routes/workflow_.summary'
 import { Route as ToolsRubberDamRouteImport } from './routes/tools.rubber-dam'
 import { Route as ToolsIrrigationRouteImport } from './routes/tools.irrigation'
 import { Route as ToolsFileCalculatorRouteImport } from './routes/tools.file-calculator'
+import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
 
 const WorkflowRoute = WorkflowRouteImport.update({
   id: '/workflow',
@@ -88,6 +89,11 @@ const ToolsFileCalculatorRoute = ToolsFileCalculatorRouteImport.update({
   path: '/tools/file-calculator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasesCaseIdRoute = CasesCaseIdRouteImport.update({
+  id: '/cases/$caseId',
+  path: '/cases/$caseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
   '/tools/irrigation': typeof ToolsIrrigationRoute
   '/tools/rubber-dam': typeof ToolsRubberDamRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
   '/tools/irrigation': typeof ToolsIrrigationRoute
   '/tools/rubber-dam': typeof ToolsRubberDamRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
   '/tools/irrigation': typeof ToolsIrrigationRoute
   '/tools/rubber-dam': typeof ToolsRubberDamRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/workflow'
+    | '/cases/$caseId'
     | '/tools/file-calculator'
     | '/tools/irrigation'
     | '/tools/rubber-dam'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/workflow'
+    | '/cases/$caseId'
     | '/tools/file-calculator'
     | '/tools/irrigation'
     | '/tools/rubber-dam'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify'
     | '/workflow'
+    | '/cases/$caseId'
     | '/tools/file-calculator'
     | '/tools/irrigation'
     | '/tools/rubber-dam'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   VerifyRoute: typeof VerifyRoute
   WorkflowRoute: typeof WorkflowRoute
+  CasesCaseIdRoute: typeof CasesCaseIdRoute
   ToolsFileCalculatorRoute: typeof ToolsFileCalculatorRoute
   ToolsIrrigationRoute: typeof ToolsIrrigationRoute
   ToolsRubberDamRoute: typeof ToolsRubberDamRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsFileCalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cases/$caseId': {
+      id: '/cases/$caseId'
+      path: '/cases/$caseId'
+      fullPath: '/cases/$caseId'
+      preLoaderRoute: typeof CasesCaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   VerifyRoute: VerifyRoute,
   WorkflowRoute: WorkflowRoute,
+  CasesCaseIdRoute: CasesCaseIdRoute,
   ToolsFileCalculatorRoute: ToolsFileCalculatorRoute,
   ToolsIrrigationRoute: ToolsIrrigationRoute,
   ToolsRubberDamRoute: ToolsRubberDamRoute,

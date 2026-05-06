@@ -36,6 +36,7 @@ function SummaryPage() {
       tooth,
       dx: dxInfo?.label || dx,
       status: "Completed",
+      fileSystem: files,
     });
     navigate({ to: "/profile" });
   };

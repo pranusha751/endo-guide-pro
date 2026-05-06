@@ -8,6 +8,7 @@ export type CaseRecord = {
   date: string;
   timestamp: number;
   status: string;
+  fileSystem?: string;
 };
 
 const CASES_KEY = "endo_made_easy_cases";
@@ -27,6 +28,11 @@ export function getCases(): CaseRecord[] {
   } catch {
     return [];
   }
+}
+
+export function getCaseById(id: string): CaseRecord | undefined {
+  const allCases = getCases();
+  return allCases.find((c) => c.id === id);
 }
 
 export function saveCase(
