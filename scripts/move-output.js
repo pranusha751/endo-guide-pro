@@ -76,23 +76,31 @@ export default async function handler(req, res) {
 `;
 
 // ...
-fs.writeFileSync(path.join(funcDir, "index.mjs"), wrapper);
+// Write wrapper to a temporary file
+const tempWrapper = path.join(funcDir, "wrapper.mjs");
+fs.writeFileSync(tempWrapper, wrapper);
 
-// Bundle the function using esbuild to inline all dependencies
+// Bundle the wrapper and server logic into the final index.mjs
 console.log("Bundling function with esbuild...");
-buildSync({
-  entryPoints: [path.join(funcDir, "index.mjs")],
-  bundle: true,
-  outfile: path.join(funcDir, "index.mjs"),
-  platform: "node",
-  format: "esm",
-  target: "node20",
-  allowOverwrite: true,
-  external: ["node:*"],
-  banner: {
-    js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
-  },
-});
+try {
+  buildSync({
+    entryPoints: [tempWrapper],
+    bundle: true,
+    outfile: path.join(funcDir, "index.mjs"),
+    platform: "node",
+    format: "esm",
+    target: "node20",
+    external: ["node:*"],
+    banner: {
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+    },
+  });
+  // Clean up temporary wrapper
+  fs.unlinkSync(tempWrapper);
+} catch (err) {
+  console.error("Bundling failed:", err);
+  process.exit(1);
+}
 
 const vcConfig = {
   runtime: "nodejs20.x",
@@ -107,5 +115,10 @@ const config = {
   routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/index" }],
 };
 fs.writeFileSync(path.join(vercelOutput, "config.json"), JSON.stringify(config, null, 2));
+
+if (fs.existsSync(path.join(funcDir, "index.mjs"))) {
+  const stats = fs.statSync(path.join(funcDir, "index.mjs"));
+  console.log(`Successfully bundled: index.mjs (${(stats.size / 1024).toFixed(2)} KB)`);
+}
 
 console.log("Successfully created and bundled .vercel/output structure");
