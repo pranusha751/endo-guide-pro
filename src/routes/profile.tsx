@@ -124,9 +124,10 @@ function ProfilePage() {
                       <span className="text-sm font-bold text-peach-foreground">{c.tooth}</span>
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">{c.dx}</div>
+                      <div className="font-medium text-sm truncate">{c.patientName || c.dx}</div>
                       <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3 h-3" /> {c.date} · {c.id}
+                        <Clock className="w-3 h-3" /> {c.patientName ? `${c.dx} · ` : ""}
+                        {c.date} · {c.id}
                       </div>
                     </div>
                   </div>
