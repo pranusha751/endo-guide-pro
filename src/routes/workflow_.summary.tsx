@@ -16,6 +16,9 @@ const searchSchema = z.object({
     .enum(FILE_SYSTEMS as unknown as [string, ...string[]])
     .optional()
     .default("ProTaper Gold"),
+  patientName: z.string().optional().default(""),
+  patientAge: z.string().optional().default(""),
+  patientGender: z.string().optional().default(""),
 });
 
 export const Route = createFileRoute("/workflow_/summary")({
@@ -25,7 +28,7 @@ export const Route = createFileRoute("/workflow_/summary")({
 });
 
 function SummaryPage() {
-  const { tooth, dx, files } = Route.useSearch();
+  const { tooth, dx, files, patientName, patientAge, patientGender } = Route.useSearch();
   const toothInfo = TEETH.find((t) => t.fdi === tooth);
   const dxInfo = DIAGNOSES.find((d) => d.id === dx);
   const protocol = FILE_PROTOCOLS[files as FileSystem];
@@ -33,6 +36,9 @@ function SummaryPage() {
 
   const handleSave = () => {
     saveCase({
+      patientName,
+      patientAge,
+      patientGender,
       tooth,
       dx: dxInfo?.label || dx,
       status: "Completed",
@@ -94,6 +100,21 @@ function SummaryPage() {
       </div>
 
       <div className="space-y-4">
+        {(patientName || patientAge || patientGender) && (
+          <Card className="rounded-2xl border-border bg-card shadow-card">
+            <CardHeader className="pb-2 border-b border-border/50">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Patient Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-3">
+              {patientName && <SummaryRow label="Name" value={patientName} />}
+              {patientAge && <SummaryRow label="Age" value={patientAge} />}
+              {patientGender && <SummaryRow label="Gender" value={patientGender} />}
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="rounded-2xl border-border bg-card shadow-card">
           <CardHeader className="pb-2 border-b border-border/50">
             <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">

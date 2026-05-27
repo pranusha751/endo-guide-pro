@@ -24,7 +24,9 @@ function CaseDetailsPage() {
           <Clock className="w-8 h-8 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-bold mb-2">Case not found</h2>
-        <p className="text-muted-foreground mb-6">The case record you're looking for doesn't exist.</p>
+        <p className="text-muted-foreground mb-6">
+          The case record you're looking for doesn't exist.
+        </p>
         <Button onClick={() => navigate({ to: "/profile" })}>Back to Profile</Button>
       </div>
     );
@@ -35,7 +37,13 @@ function CaseDetailsPage() {
   const protocol = caseData.fileSystem ? FILE_PROTOCOLS[caseData.fileSystem as FileSystem] : null;
 
   const handleShare = async () => {
-    const summaryText = `Endo Guide Pro Case Summary\n\nTooth: ${caseData.tooth} — ${toothInfo?.name}\nDiagnosis: ${caseData.dx}\nAccess: ${toothInfo?.accessShape ?? "—"}\nFile System: ${caseData.fileSystem ?? "—"}\nTarget MAF: ${protocol?.maf ?? "—"}\nClamp: ${toothInfo?.clamp ?? "—"}\n\nGenerated via Endo Guide Pro`;
+    let summaryText = `Endo Guide Pro Case Summary\n\n`;
+    if (caseData.patientName) summaryText += `Patient: ${caseData.patientName}\n`;
+    const details = [];
+    if (caseData.patientAge) details.push(`${caseData.patientAge}yo`);
+    if (caseData.patientGender) details.push(caseData.patientGender);
+    if (details.length > 0) summaryText += `Details: ${details.join(" ")}\n`;
+    summaryText += `Tooth: ${caseData.tooth} — ${toothInfo?.name}\nDiagnosis: ${caseData.dx}\nAccess: ${toothInfo?.accessShape ?? "—"}\nFile System: ${caseData.fileSystem ?? "—"}\nTarget MAF: ${protocol?.maf ?? "—"}\nClamp: ${toothInfo?.clamp ?? "—"}\n\nGenerated via Endo Guide Pro`;
 
     if (navigator.share) {
       try {
@@ -68,6 +76,42 @@ function CaseDetailsPage() {
         <PageHeader title="Case Details" subtitle={`Record ID: ${caseData.id}`} />
       </div>
 
+      {(caseData.patientName || caseData.patientAge || caseData.patientGender) && (
+        <Card className="rounded-2xl border-border bg-card shadow-card">
+          <CardHeader className="pb-2 border-b border-border/50">
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Patient Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {caseData.patientName && (
+                <div className="col-span-2">
+                  <span className="text-[10px] uppercase text-muted-foreground font-bold">
+                    Name
+                  </span>
+                  <div className="text-sm font-bold mt-1">{caseData.patientName}</div>
+                </div>
+              )}
+              {caseData.patientAge && (
+                <div>
+                  <span className="text-[10px] uppercase text-muted-foreground font-bold">Age</span>
+                  <div className="text-sm font-bold mt-1">{caseData.patientAge}</div>
+                </div>
+              )}
+              {caseData.patientGender && (
+                <div>
+                  <span className="text-[10px] uppercase text-muted-foreground font-bold">
+                    Gender
+                  </span>
+                  <div className="text-sm font-bold mt-1">{caseData.patientGender}</div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="rounded-2xl border-border bg-card shadow-card">
         <CardHeader className="pb-2 border-b border-border/50 flex flex-row items-center justify-between">
           <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -79,45 +123,56 @@ function CaseDetailsPage() {
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-             <div>
-                <span className="text-[10px] uppercase text-muted-foreground font-bold">Tooth</span>
-                <div className="text-sm font-bold mt-1">{caseData.tooth} — {toothInfo?.name}</div>
-             </div>
-             <div>
-                <span className="text-[10px] uppercase text-muted-foreground font-bold">Diagnosis</span>
-                <div className="text-sm font-bold mt-1" style={{ color: dxInfo?.color ? `var(--${dxInfo.color}-foreground)` : undefined }}>
-                  {caseData.dx}
-                </div>
-             </div>
+            <div>
+              <span className="text-[10px] uppercase text-muted-foreground font-bold">Tooth</span>
+              <div className="text-sm font-bold mt-1">
+                {caseData.tooth} — {toothInfo?.name}
+              </div>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase text-muted-foreground font-bold">
+                Diagnosis
+              </span>
+              <div
+                className="text-sm font-bold mt-1"
+                style={{ color: dxInfo?.color ? `var(--${dxInfo.color}-foreground)` : undefined }}
+              >
+                {caseData.dx}
+              </div>
+            </div>
           </div>
-          
+
           <div className="h-px bg-border/50" />
-          
+
           <div className="grid grid-cols-2 gap-4">
-             <div>
-                <span className="text-[10px] uppercase text-muted-foreground font-bold">Access Cavity</span>
-                <div className="text-sm font-bold mt-1">{toothInfo?.accessShape ?? "—"}</div>
-             </div>
-             <div>
-                <span className="text-[10px] uppercase text-muted-foreground font-bold">Clamp</span>
-                <div className="text-sm font-bold mt-1">{toothInfo?.clamp ?? "—"}</div>
-             </div>
+            <div>
+              <span className="text-[10px] uppercase text-muted-foreground font-bold">
+                Access Cavity
+              </span>
+              <div className="text-sm font-bold mt-1">{toothInfo?.accessShape ?? "—"}</div>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase text-muted-foreground font-bold">Clamp</span>
+              <div className="text-sm font-bold mt-1">{toothInfo?.clamp ?? "—"}</div>
+            </div>
           </div>
 
           <div className="h-px bg-border/50" />
 
           <div>
-             <span className="text-[10px] uppercase text-muted-foreground font-bold">Endodontic Protocol</span>
-             <div className="bg-primary/5 rounded-xl p-3 mt-2 space-y-2">
-                <div className="flex justify-between text-xs">
-                   <span className="text-muted-foreground">File System</span>
-                   <span className="font-bold">{caseData.fileSystem ?? "—"}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                   <span className="text-muted-foreground">Target MAF</span>
-                   <span className="font-bold">{protocol?.maf ?? "—"}</span>
-                </div>
-             </div>
+            <span className="text-[10px] uppercase text-muted-foreground font-bold">
+              Endodontic Protocol
+            </span>
+            <div className="bg-primary/5 rounded-xl p-3 mt-2 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">File System</span>
+                <span className="font-bold">{caseData.fileSystem ?? "—"}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Target MAF</span>
+                <span className="font-bold">{protocol?.maf ?? "—"}</span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -3,6 +3,9 @@ import { getCurrentUser } from "./auth-stub";
 export type CaseRecord = {
   id: string;
   userId: string;
+  patientName?: string;
+  patientAge?: string;
+  patientGender?: string;
   tooth: string;
   dx: string;
   date: string;

@@ -67,6 +67,9 @@ interface PulpTests {
 
 function WorkflowPage() {
   const [step, setStep] = useState(0);
+  const [patientName, setPatientName] = useState("");
+  const [patientAge, setPatientAge] = useState("");
+  const [patientGender, setPatientGender] = useState("Select");
   const [tooth, setTooth] = useState("16");
   const [symptoms, setSymptoms] = useState<Symptoms>({
     spontaneous: false,
@@ -132,7 +135,36 @@ function WorkflowPage() {
 
       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300" key={step}>
         {step === 0 && (
-          <Card title="Tooth Selection">
+          <Card title="Patient & Tooth Selection">
+            <div className="py-2">
+              <Label>Patient Name (Optional)</Label>
+              <input
+                type="text"
+                value={patientName}
+                onChange={(e) => setPatientName(e.target.value)}
+                placeholder="e.g. John Doe"
+                className="w-full rounded-2xl bg-input/40 border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="py-2">
+                <Label>Age</Label>
+                <input
+                  type="number"
+                  value={patientAge}
+                  onChange={(e) => setPatientAge(e.target.value)}
+                  placeholder="e.g. 45"
+                  className="w-full rounded-2xl bg-input/40 border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <SelectField
+                label="Gender"
+                value={patientGender}
+                options={["Select", "Male", "Female", "Other"]}
+                onChange={setPatientGender}
+              />
+            </div>
+            <div className="h-px bg-border/50 my-5" />
             <Label>FDI Tooth Number</Label>
             <select
               value={tooth}
@@ -439,7 +471,14 @@ function WorkflowPage() {
             </Card>
             <Link
               to="/workflow/summary"
-              search={{ tooth, dx: activeDx, files: fileSys }}
+              search={{
+                tooth,
+                dx: activeDx,
+                files: fileSys,
+                patientName,
+                patientAge,
+                patientGender: patientGender === "Select" ? "" : patientGender,
+              }}
               className="w-full rounded-2xl bg-primary text-primary-foreground py-4 font-semibold flex items-center justify-center gap-2 shadow-soft"
             >
               <Save className="w-5 h-5" /> Save Case & Schedule Follow-up
