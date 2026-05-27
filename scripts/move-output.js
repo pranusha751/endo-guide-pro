@@ -75,7 +75,6 @@ export default async function handler(req, res) {
 const tempWrapper = path.join(funcDir, "wrapper.mjs");
 fs.writeFileSync(tempWrapper, wrapper);
 
-
 // Copy server.js for bundling
 fs.copyFileSync(path.join(distServer, "server.js"), path.join(funcDir, "server.js"));
 
@@ -98,18 +97,22 @@ fs.unlinkSync(tempWrapper);
 fs.unlinkSync(path.join(funcDir, "server.js"));
 
 // 5. Configs
-fs.writeFileSync(path.join(funcDir, ".vc-config.json"), JSON.stringify({
-  runtime: "nodejs20.x",
-  handler: "index.mjs",
-  launcherType: "Nodejs"
-}, null, 2));
+fs.writeFileSync(
+  path.join(funcDir, ".vc-config.json"),
+  JSON.stringify(
+    {
+      runtime: "nodejs20.x",
+      handler: "index.mjs",
+      launcherType: "Nodejs",
+    },
+    null,
+    2,
+  ),
+);
 
 const config = {
   version: 3,
-  routes: [
-    { handle: "filesystem" },
-    { src: "/(.*)", dest: "/render" }
-  ]
+  routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/render" }],
 };
 fs.writeFileSync(path.join(vercelOutput, "config.json"), JSON.stringify(config, null, 2));
 

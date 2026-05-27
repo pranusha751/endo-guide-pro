@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppShell";
 import { TEETH, DIAGNOSES, FILE_PROTOCOLS, FILE_SYSTEMS, type FileSystem } from "@/lib/endo-data";
 import { saveCase } from "@/lib/cases";
+import { getCurrentUser } from "@/lib/auth";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,17 +25,26 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/workflow_/summary")({
   validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Case Summary — Endo Made Easy" }] }),
+  loader: async () => {
+    const user = await getCurrentUser();
+    return { user };
+  },
   component: SummaryPage,
 });
 
 function SummaryPage() {
   const { tooth, dx, files, patientName, patientAge, patientGender } = Route.useSearch();
+  const { user } = Route.useLoaderData();
   const toothInfo = TEETH.find((t) => t.fdi === tooth);
   const dxInfo = DIAGNOSES.find((d) => d.id === dx);
   const protocol = FILE_PROTOCOLS[files as FileSystem];
   const navigate = useNavigate();
 
   const handleSave = () => {
+    if (!user) {
+      toast.error("Please login to save cases.");
+      return;
+    }
     saveCase({
       patientName,
       patientAge,
@@ -43,7 +53,7 @@ function SummaryPage() {
       dx: dxInfo?.label || dx,
       status: "Completed",
       fileSystem: files,
-    });
+    }, user.email);
     navigate({ to: "/profile" });
   };
 

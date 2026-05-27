@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { Activity, BookOpen, Stethoscope, Wrench, User, Bell, LogOut } from "lucide-react";
-import { signOut } from "@/lib/auth-stub";
+import { useServerFn } from "@tanstack/react-start";
+import { signOut } from "@/lib/auth";
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -52,6 +53,8 @@ export function AppShell() {
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const navigate = useNavigate();
+  const signOutFn = useServerFn(signOut);
+
   return (
     <header className="mb-6 pt-6 flex items-start justify-between">
       <div>
@@ -66,7 +69,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
         <button
           className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors"
           onClick={async () => {
-            await signOut();
+            await signOutFn({ data: undefined });
             navigate({ to: "/login" });
           }}
           title="Log out"

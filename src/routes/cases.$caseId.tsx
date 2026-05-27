@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppShell";
 import { TEETH, DIAGNOSES, FILE_PROTOCOLS, type FileSystem } from "@/lib/endo-data";
 import { getCaseById } from "@/lib/cases";
+import { getCurrentUser } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Calendar, Share2, ArrowLeft, Clock } from "lucide-react";
@@ -9,12 +10,17 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/cases/$caseId")({
   head: () => ({ meta: [{ title: "Case Details — Endo Made Easy" }] }),
+  loader: async () => {
+    const user = await getCurrentUser();
+    return { user };
+  },
   component: CaseDetailsPage,
 });
 
 function CaseDetailsPage() {
   const { caseId } = Route.useParams();
-  const caseData = getCaseById(caseId);
+  const { user } = Route.useLoaderData();
+  const caseData = user?.email ? getCaseById(caseId, user.email) : undefined;
   const navigate = useNavigate();
 
   if (!caseData) {

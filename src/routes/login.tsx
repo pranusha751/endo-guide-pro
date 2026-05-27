@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2 } from "lucide-react";
-import { signInWithPassword, signInWithGoogle } from "@/lib/auth-stub";
+import { signInWithPassword, signInWithGoogle } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -26,13 +27,15 @@ function RouteComponent() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const loginFn = useServerFn(signInWithPassword);
+  const googleLoginFn = useServerFn(signInWithGoogle);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
     setLoading(true);
-    // Supabase-ready: swap signInWithPassword in src/lib/auth-stub.ts
-    const { user, error: authError } = await signInWithPassword(email, password);
+    const { user, error: authError } = await loginFn({ data: { email, password } });
     setLoading(false);
     if (authError || !user) {
       setError(authError ?? "Unable to sign in.");
@@ -46,7 +49,7 @@ function RouteComponent() {
     setSuccessMsg(null);
     setLoading(true);
 
-    const { user, error: authError } = await signInWithGoogle();
+    const { user, error: authError } = await googleLoginFn({ data: {} });
     setLoading(false);
 
     if (authError || !user) {

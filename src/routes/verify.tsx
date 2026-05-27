@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
-import { AuthUser } from "@/lib/auth-stub";
+import { useServerFn } from "@tanstack/react-start";
+import { verifyMagicLink } from "@/lib/auth";
 
 export const Route = createFileRoute("/verify")({
   component: VerifyRoute,
@@ -12,26 +13,21 @@ function VerifyRoute() {
   const search: Record<string, string> = Route.useSearch();
   const [verifying, setVerifying] = useState(true);
 
+  const verifyFn = useServerFn(verifyMagicLink);
+
   useEffect(() => {
     const email = search.email as string | undefined;
 
-    // Simulate verification delay
-    setTimeout(() => {
-      if (email) {
-        const user: AuthUser = {
-          id: crypto.randomUUID(),
-          email: email,
-          fullName: `Dr. ${email.split("@")[0]}`,
-        };
-        // Log them in
-        localStorage.setItem("endo_made_easy_user", JSON.stringify(user));
-      }
+    if (email) {
+      verifyFn({ data: { email } }).then(({ user }) => {
+        setVerifying(false);
+        setTimeout(() => navigate({ to: "/workflow" }), 1500);
+      });
+    } else {
       setVerifying(false);
-
-      // Redirect to workflow after a short delay
-      setTimeout(() => navigate({ to: "/workflow" }), 1500);
-    }, 1500);
-  }, [search, navigate]);
+      setTimeout(() => navigate({ to: "/login" }), 1500);
+    }
+  }, [search, navigate, verifyFn]);
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 min-h-screen bg-background">

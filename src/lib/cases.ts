@@ -1,5 +1,4 @@
-import { getCurrentUser } from "./auth-stub";
-
+// cases.ts
 export type CaseRecord = {
   id: string;
   userId: string;
@@ -16,34 +15,31 @@ export type CaseRecord = {
 
 const CASES_KEY = "endo_made_easy_cases";
 
-export function getCases(): CaseRecord[] {
-  if (typeof window === "undefined") return [];
-  const user = getCurrentUser();
-  if (!user) return [];
+export function getCases(userId: string): CaseRecord[] {
+  if (typeof window === "undefined" || !userId) return [];
 
   const raw = localStorage.getItem(CASES_KEY);
   if (!raw) return [];
   try {
     const allCases: CaseRecord[] = JSON.parse(raw);
     return allCases
-      .filter((c) => c.userId === user.email || c.userId === user.id)
+      .filter((c) => c.userId === userId)
       .sort((a, b) => b.timestamp - a.timestamp);
   } catch {
     return [];
   }
 }
 
-export function getCaseById(id: string): CaseRecord | undefined {
-  const allCases = getCases();
+export function getCaseById(id: string, userId: string): CaseRecord | undefined {
+  const allCases = getCases(userId);
   return allCases.find((c) => c.id === id);
 }
 
 export function saveCase(
   caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">,
+  userId: string
 ): CaseRecord | null {
-  if (typeof window === "undefined") return null;
-  const user = getCurrentUser();
-  if (!user) return null;
+  if (typeof window === "undefined" || !userId) return null;
 
   const raw = localStorage.getItem(CASES_KEY);
   let allCases: CaseRecord[] = [];
@@ -65,7 +61,7 @@ export function saveCase(
   const newCase: CaseRecord = {
     ...caseData,
     id: `C-${Math.floor(Math.random() * 900) + 100}`,
-    userId: user.email,
+    userId: userId,
     date: dateStr,
     timestamp: dateObj.getTime(),
   };
