@@ -58,7 +58,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
       return { user: null, error: "Invalid email or password." };
     }
 
-    const isValid = await bcrypt.compare(data.password, user.passwordHash);
+    const isValid = bcrypt.compareSync(data.password, user.passwordHash);
     if (!isValid) {
       return { user: null, error: "Invalid email or password." };
     }
@@ -80,6 +80,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
 export const signUpWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName: string; email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
+    console.log("signUpWithPassword called:", data.email);
     if (!data.fullName || !data.email || !data.password) {
       return { user: null, error: "All fields are required." };
     }
@@ -87,12 +88,15 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
       return { user: null, error: "Password must be at least 6 characters." };
     }
 
+    console.log("Getting existing user...");
     const existingUser = await getUserByEmail(data.email);
     if (existingUser) {
+      console.log("User already exists");
       return { user: null, error: "Email is already registered." };
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    console.log("Hashing password...");
+    const passwordHash = bcrypt.hashSync(data.password, 10);
     const newUser: User = {
       id: crypto.randomUUID(),
       email: data.email,
@@ -100,11 +104,14 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
       passwordHash,
     };
 
+    console.log("Saving user...");
     await saveUser(newUser);
 
+    console.log("Creating token...");
     const authUser: AuthUser = { id: newUser.id, email: newUser.email, fullName: newUser.fullName };
     const token = await createToken(authUser);
 
+    console.log("Setting cookie...");
     setCookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -113,6 +120,7 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
       path: "/",
     });
 
+    console.log("Done");
     return { user: authUser, error: null };
   });
 
@@ -132,7 +140,7 @@ export const signInWithGoogle = createServerFn({ method: "POST" })
         id: crypto.randomUUID(),
         email,
         fullName: `Dr. ${email.split("@")[0]}`,
-        passwordHash: await bcrypt.hash(crypto.randomUUID(), 10), // Random password
+        passwordHash: bcrypt.hashSync(crypto.randomUUID(), 10), // Random password
       };
       await saveUser(user);
     }

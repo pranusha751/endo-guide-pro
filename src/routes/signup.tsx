@@ -30,25 +30,37 @@ function RouteComponent() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await signUpWithPassword({ data: { fullName: name, email, password } });
-    setLoading(false);
-    if (res.error || !res.user) {
-      setError(res.error ?? "Unable to create account.");
-      return;
+    try {
+      const res = await signUpWithPassword({ data: { fullName: name, email, password } });
+      if (res.error || !res.user) {
+        setError(res.error ?? "Unable to create account.");
+        return;
+      }
+      navigate({ to: "/workflow" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/workflow" });
   };
 
   const handleGoogleSignup = async () => {
     setError(null);
     setLoading(true);
-    const { user, error: authError } = await signInWithGoogle({ data: {} });
-    setLoading(false);
-    if (authError || !user) {
-      setError(authError ?? "Unable to sign up with Google.");
-      return;
+    try {
+      const { user, error: authError } = await signInWithGoogle({ data: {} });
+      if (authError || !user) {
+        setError(authError ?? "Unable to sign up with Google.");
+        return;
+      }
+      navigate({ to: "/workflow" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during Google signup.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/workflow" });
   };
 
   return (

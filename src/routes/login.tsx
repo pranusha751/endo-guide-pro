@@ -32,26 +32,38 @@ function RouteComponent() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const res = await signInWithPassword({ data: { email, password } });
-    setLoading(false);
-    if (res.error || !res.user) {
-      setError(res.error ?? "Unable to sign in.");
-      return;
+    try {
+      const res = await signInWithPassword({ data: { email, password } });
+      if (res.error || !res.user) {
+        setError(res.error ?? "Unable to sign in.");
+        return;
+      }
+      navigate({ to: "/workflow" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during login.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/workflow" });
   };
 
   const handleGoogleLogin = async () => {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const { user, error: authError } = await signInWithGoogle({ data: {} });
-    setLoading(false);
-    if (authError || !user) {
-      setError(authError ?? "Unable to sign in with Google.");
-      return;
+    try {
+      const { user, error: authError } = await signInWithGoogle({ data: {} });
+      if (authError || !user) {
+        setError(authError ?? "Unable to sign in with Google.");
+        return;
+      }
+      navigate({ to: "/workflow" });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during Google login.";
+      setError(msg);
+    } finally {
+      setLoading(false);
     }
-    navigate({ to: "/workflow" });
   };
 
   return (
