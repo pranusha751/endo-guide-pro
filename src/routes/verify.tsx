@@ -1,50 +1,71 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { verifyMagicLink } from "@/lib/auth";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { verifyEmail } from "@/lib/auth-stub";
+
+const searchSchema = z.object({
+  email: z.string().optional(),
+});
 
 export const Route = createFileRoute("/verify")({
+  validateSearch: searchSchema,
   component: VerifyRoute,
 });
 
 function VerifyRoute() {
   const navigate = useNavigate();
-  const search: Record<string, string> = Route.useSearch();
-  const [verifying, setVerifying] = useState(true);
-
-  const verifyFn = useServerFn(verifyMagicLink);
+  const { email } = Route.useSearch();
+  const [state, setState] = useState<"verifying" | "success" | "error">("verifying");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const email = search.email as string | undefined;
-
-    if (email) {
-      verifyFn({ data: { email } }).then(({ user }) => {
-        setVerifying(false);
-        setTimeout(() => navigate({ to: "/workflow" }), 1500);
-      });
-    } else {
-      setVerifying(false);
-      setTimeout(() => navigate({ to: "/login" }), 1500);
+    if (!email) {
+      setState("error");
+      setMessage("Missing verification token.");
+      return;
     }
-  }, [search, navigate, verifyFn]);
+    verifyEmail(email).then((res) => {
+      if (res.error || !res.user) {
+        setState("error");
+        setMessage(res.error ?? "Verification failed.");
+        return;
+      }
+      setState("success");
+      setTimeout(() => navigate({ to: "/workflow" }), 1500);
+    });
+  }, [email, navigate]);
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 min-h-screen bg-background">
-      <div className="text-center space-y-4">
-        {verifying ? (
+      <div className="text-center space-y-4 max-w-xs">
+        {state === "verifying" && (
           <>
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-            <h2 className="text-xl font-semibold">Verifying Magic Link...</h2>
-            <p className="text-muted-foreground text-sm">Please wait while we log you in.</p>
+            <h2 className="text-xl font-semibold">Verifying your email…</h2>
+            <p className="text-muted-foreground text-sm">Hang tight, almost done.</p>
           </>
-        ) : (
+        )}
+        {state === "success" && (
           <>
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mint">
-              <CheckCircle2 className="h-6 w-6 text-mint-foreground" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/15">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold">Verification Successful!</h2>
-            <p className="text-muted-foreground text-sm">Redirecting to the app...</p>
+            <h2 className="text-xl font-semibold">Email verified</h2>
+            <p className="text-muted-foreground text-sm">Redirecting to your workflow…</p>
+          </>
+        )}
+        {state === "error" && (
+          <>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+            </div>
+            <h2 className="text-xl font-semibold">Verification failed</h2>
+            <p className="text-muted-foreground text-sm">{message}</p>
+            <Button asChild>
+              <Link to="/login">Back to login</Link>
+            </Button>
           </>
         )}
       </div>
