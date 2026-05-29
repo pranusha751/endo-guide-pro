@@ -16,7 +16,7 @@ export type AuthResponse = {
 };
 
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || "endo-guide-pro-super-secret-jwt-key-2026"
+  process.env.JWT_SECRET || "endo-guide-pro-super-secret-jwt-key-2026",
 );
 
 async function createToken(user: AuthUser) {
@@ -65,7 +65,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
 
     const authUser: AuthUser = { id: user.id, email: user.email, fullName: user.fullName };
     const token = await createToken(authUser);
-    
+
     setCookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -104,7 +104,7 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
 
     const authUser: AuthUser = { id: newUser.id, email: newUser.email, fullName: newUser.fullName };
     const token = await createToken(authUser);
-    
+
     setCookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -125,7 +125,7 @@ export const signInWithGoogle = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AuthResponse> => {
     // Mocked for now since real Google OAuth requires a client ID and secret
     const email = data?.email || "doctor@google.com";
-    
+
     let user = await getUserByEmail(email);
     if (!user) {
       user = {
@@ -139,37 +139,7 @@ export const signInWithGoogle = createServerFn({ method: "POST" })
 
     const authUser: AuthUser = { id: user.id, email: user.email, fullName: user.fullName };
     const token = await createToken(authUser);
-    
-    setCookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
 
-    return { user: authUser, error: null };
-  });
-
-export const verifyMagicLink = createServerFn({ method: "POST" })
-  .inputValidator((data: { email: string }) => data)
-  .handler(async ({ data }): Promise<AuthResponse> => {
-    if (!data.email) return { user: null, error: "Email is required." };
-    
-    let user = await getUserByEmail(data.email);
-    if (!user) {
-      user = {
-        id: crypto.randomUUID(),
-        email: data.email,
-        fullName: `Dr. ${data.email.split("@")[0]}`,
-        passwordHash: await bcrypt.hash(crypto.randomUUID(), 10),
-      };
-      await saveUser(user);
-    }
-
-    const authUser: AuthUser = { id: user.id, email: user.email, fullName: user.fullName };
-    const token = await createToken(authUser);
-    
     setCookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

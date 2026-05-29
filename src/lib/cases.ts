@@ -22,9 +22,7 @@ export function getCases(userId: string): CaseRecord[] {
   if (!raw) return [];
   try {
     const allCases: CaseRecord[] = JSON.parse(raw);
-    return allCases
-      .filter((c) => c.userId === userId)
-      .sort((a, b) => b.timestamp - a.timestamp);
+    return allCases.filter((c) => c.userId === userId).sort((a, b) => b.timestamp - a.timestamp);
   } catch {
     return [];
   }
@@ -37,7 +35,7 @@ export function getCaseById(id: string, userId: string): CaseRecord | undefined 
 
 export function saveCase(
   caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">,
-  userId: string
+  userId: string,
 ): CaseRecord | null {
   if (typeof window === "undefined" || !userId) return null;
 

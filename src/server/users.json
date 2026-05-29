@@ -28,5 +28,17 @@
     "email": "doctor@google.com",
     "fullName": "Dr. doctor",
     "passwordHash": "$2b$10$gD0iXxNFbTL/WH.B9SqLiO/Gr5vYGRkBW25eb5m5h9hCFfe8ebZ4K"
+  },
+  {
+    "id": "09c47205-850c-41a0-b3de-b1442150324a",
+    "email": "bellepranusha@gmail.com",
+    "fullName": "Dr.Pranu",
+    "passwordHash": "$2b$10$Ft0OphhMpYAeLa7DyQy7TuimJqX3ceSJtTtH0HCIya6zW8ud529a6"
+  },
+  {
+    "id": "f548470a-40c0-4873-9adc-d5439976028a",
+    "email": "sunny@gmail.com",
+    "fullName": "Dr.yaswanth",
+    "passwordHash": "$2b$10$T/w8xJj20Db.VeawOoPNXe/4ztDLcljA1Cdpbc9/fQ7hgnkob0wx."
   }
 ]

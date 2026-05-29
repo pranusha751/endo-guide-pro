@@ -45,15 +45,18 @@ function SummaryPage() {
       toast.error("Please login to save cases.");
       return;
     }
-    saveCase({
-      patientName,
-      patientAge,
-      patientGender,
-      tooth,
-      dx: dxInfo?.label || dx,
-      status: "Completed",
-      fileSystem: files,
-    }, user.email);
+    saveCase(
+      {
+        patientName,
+        patientAge,
+        patientGender,
+        tooth,
+        dx: dxInfo?.label || dx,
+        status: "Completed",
+        fileSystem: files,
+      },
+      user.email,
+    );
     navigate({ to: "/profile" });
   };
 
