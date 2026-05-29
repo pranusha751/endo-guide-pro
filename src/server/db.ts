@@ -9,8 +9,14 @@ export type User = {
   passwordHash: string;
 };
 
+import os from "node:os";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "users.json");
+const isServerless =
+  process.env.VERCEL === "1" || process.env.AWS_REGION || process.env.NODE_ENV === "production";
+const DB_PATH = isServerless
+  ? path.join(os.tmpdir(), "users.json")
+  : path.join(__dirname, "users.json");
 
 async function ensureDb() {
   try {
