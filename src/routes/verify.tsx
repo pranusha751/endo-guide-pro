@@ -1,41 +1,71 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { verifyEmail } from "@/lib/auth-stub";
-
-const searchSchema = z.object({
-  email: z.string().optional(),
-});
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/verify")({
-  validateSearch: searchSchema,
   component: VerifyRoute,
 });
 
 function VerifyRoute() {
   const navigate = useNavigate();
-  const { email } = Route.useSearch();
   const [state, setState] = useState<"verifying" | "success" | "error">("verifying");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!email) {
-      setState("error");
-      setMessage("Missing verification token.");
-      return;
-    }
-    verifyEmail(email).then((res) => {
-      if (res.error || !res.user) {
-        setState("error");
-        setMessage(res.error ?? "Verification failed.");
-        return;
+    let cancelled = false;
+
+    async function run() {
+      // Supabase puts tokens in the URL hash on confirmation links.
+      // detectSessionInUrl (default) processes them automatically; we just
+      // wait briefly then check the resulting session.
+      try {
+        const hash = typeof window !== "undefined" ? window.location.hash : "";
+        if (hash.includes("error")) {
+          const params = new URLSearchParams(hash.replace(/^#/, ""));
+          const desc = params.get("error_description") ?? params.get("error") ?? "Verification failed.";
+          if (!cancelled) {
+            setState("error");
+            setMessage(desc.replace(/\+/g, " "));
+          }
+          return;
+        }
+
+        // Give Supabase a tick to process the URL hash if present.
+        await new Promise((r) => setTimeout(r, 250));
+        const { data, error } = await supabase.auth.getUser();
+        if (cancelled) return;
+
+        if (error || !data.user) {
+          setState("error");
+          setMessage(
+            "We couldn't verify this link. It may have expired or already been used. Try signing in or request a new link.",
+          );
+          return;
+        }
+
+        if (!data.user.email_confirmed_at) {
+          setState("error");
+          setMessage("Email not confirmed yet. Please click the link in your inbox.");
+          return;
+        }
+
+        setState("success");
+        setTimeout(() => navigate({ to: "/workflow" }), 1200);
+      } catch (e) {
+        if (!cancelled) {
+          setState("error");
+          setMessage(e instanceof Error ? e.message : "Verification failed.");
+        }
       }
-      setState("success");
-      setTimeout(() => navigate({ to: "/workflow" }), 1500);
-    });
-  }, [email, navigate]);
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 min-h-screen bg-background">
