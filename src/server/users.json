@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "94708a40-8c14-4cff-a5fe-1b9fe6758831",
+    "email": "pranusha@gmail.com",
+    "fullName": "B.Pranusha",
+    "passwordHash": "$2b$10$itNCJzExzWdS3mv9a0m2yeD.SzAv54.VIFseo1EWkaJlgPtQP7eCi"
+  },
+  {
+    "id": "a7875c92-3609-47fa-aa9e-ed17f6427102",
+    "email": "pranu@gmail.com",
+    "fullName": "B.Pranu",
+    "passwordHash": "$2b$10$AXTD0nz1DQcTWwSvHSIV9uU.wNnCn6OyM2Z7CNtL7qHTRJzhIG9BG"
+  },
+  {
+    "id": "8acc5ccd-a3ee-47ce-b6e4-6c776e82de7e",
+    "email": "sai@gmail.com",
+    "fullName": "Dr.Sai",
+    "passwordHash": "$2b$10$oiwPHfLjorQTt6.qjZI71O.Eeb761QOx.IqdKf5fmOegLWVzwtc6u"
+  },
+  {
+    "id": "uuid-1234",
+    "email": "test1780024626623@test.com",
+    "fullName": "Test User",
+    "passwordHash": "$2b$10$eGb.33rvzCxLS69D8AxVv.Pr9NH2Y093eq8vMDLwr5QhabjytJJhq"
+  },
+  {
+    "id": "bf119919-03ea-4cb8-9b65-e7589f514fd0",
+    "email": "doctor@google.com",
+    "fullName": "Dr. doctor",
+    "passwordHash": "$2b$10$gD0iXxNFbTL/WH.B9SqLiO/Gr5vYGRkBW25eb5m5h9hCFfe8ebZ4K"
+  }
+]
