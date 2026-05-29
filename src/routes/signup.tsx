@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2, MailCheck } from "lucide-react";
-import { signUpWithPassword, signInWithGoogle } from "@/lib/auth-stub";
+import { signUpWithPassword, signInWithGoogle, verifyEmail } from "@/lib/auth-stub";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -26,6 +26,20 @@ function RouteComponent() {
   const [error, setError] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
+  const handleVerifyNow = async () => {
+    if (!pendingEmail) return;
+    setError(null);
+    setVerifying(true);
+    const res = await verifyEmail(pendingEmail);
+    setVerifying(false);
+    if (res.error || !res.user) {
+      setError(res.error ?? "Verification failed.");
+      return;
+    }
+    navigate({ to: "/workflow" });
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,16 +85,21 @@ function RouteComponent() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
-              Didn't get the email? Check your spam folder, or use the demo link below to simulate
-              email verification while the backend is being set up.
+              Didn't get the email? Check your spam folder, or tap the button below to simulate
+              clicking the verification link while the backend is being set up.
             </div>
-            <Button
-              asChild
-              className="w-full"
-              variant="outline"
-            >
+            {error && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <Button onClick={handleVerifyNow} className="w-full" disabled={verifying}>
+              {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Verify email now (demo)
+            </Button>
+            <Button asChild variant="outline" className="w-full">
               <Link to="/verify" search={{ email: pendingEmail }}>
-                Open demo verification link
+                Open verification link instead
               </Link>
             </Button>
             <Button asChild variant="ghost" className="w-full">
