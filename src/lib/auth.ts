@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { saveUser, getUserByEmail, User } from "../server/db";
 
 export type AuthUser = {
