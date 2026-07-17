@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowRouteImport } from './routes/workflow'
-import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
@@ -29,9 +29,9 @@ const WorkflowRoute = WorkflowRouteImport.update({
   path: '/workflow',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VerifyEmailRoute = VerifyEmailRouteImport.update({
-  id: '/verify-email',
-  path: '/verify-email',
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -102,7 +102,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/verify-email': typeof VerifyEmailRoute
+  '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
@@ -118,7 +118,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/verify-email': typeof VerifyEmailRoute
+  '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
@@ -135,7 +135,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/verify-email': typeof VerifyEmailRoute
+  '/verify': typeof VerifyRoute
   '/workflow': typeof WorkflowRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/tools/file-calculator': typeof ToolsFileCalculatorRoute
@@ -153,7 +153,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/signup'
-    | '/verify-email'
+    | '/verify'
     | '/workflow'
     | '/cases/$caseId'
     | '/tools/file-calculator'
@@ -169,7 +169,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/signup'
-    | '/verify-email'
+    | '/verify'
     | '/workflow'
     | '/cases/$caseId'
     | '/tools/file-calculator'
@@ -185,7 +185,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/signup'
-    | '/verify-email'
+    | '/verify'
     | '/workflow'
     | '/cases/$caseId'
     | '/tools/file-calculator'
@@ -202,7 +202,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   SignupRoute: typeof SignupRoute
-  VerifyEmailRoute: typeof VerifyEmailRoute
+  VerifyRoute: typeof VerifyRoute
   WorkflowRoute: typeof WorkflowRoute
   CasesCaseIdRoute: typeof CasesCaseIdRoute
   ToolsFileCalculatorRoute: typeof ToolsFileCalculatorRoute
@@ -221,11 +221,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkflowRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/verify-email': {
-      id: '/verify-email'
-      path: '/verify-email'
-      fullPath: '/verify-email'
-      preLoaderRoute: typeof VerifyEmailRouteImport
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -322,7 +322,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   SignupRoute: SignupRoute,
-  VerifyEmailRoute: VerifyEmailRoute,
+  VerifyRoute: VerifyRoute,
   WorkflowRoute: WorkflowRoute,
   CasesCaseIdRoute: CasesCaseIdRoute,
   ToolsFileCalculatorRoute: ToolsFileCalculatorRoute,

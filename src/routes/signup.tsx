@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HeartPulse, Loader2 } from "lucide-react";
+import { HeartPulse, Loader2, MailCheck } from "lucide-react";
 import { signUpWithPassword, signInWithGoogle } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -24,6 +24,7 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -32,13 +33,16 @@ function RouteComponent() {
     setLoading(true);
     try {
       const res = await signUpWithPassword({ data: { fullName: name, email, password } });
-      if (res.error || !res.user) {
+      if (res.error) {
         setError(res.error ?? "Unable to create account.");
         return;
       }
-      navigate({ to: "/workflow" });
+      if (res.message) {
+        setSuccess(res.message);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
+      const msg =
+        err instanceof Error ? err.message : "An unexpected error occurred during signup.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -56,12 +60,36 @@ function RouteComponent() {
       }
       navigate({ to: "/workflow" });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred during Google signup.";
+      const msg =
+        err instanceof Error ? err.message : "An unexpected error occurred during Google signup.";
       setError(msg);
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
+        <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border">
+          <CardHeader className="space-y-2 text-center">
+            <div className="mb-2 flex justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <MailCheck className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+            <CardDescription className="text-sm pt-2">{success}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+             <Button onClick={() => navigate({ to: "/login" })} className="w-full mt-4">
+               Go to Login
+             </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">

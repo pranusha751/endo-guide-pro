@@ -3,30 +3,26 @@ import { PageHeader } from "@/components/AppShell";
 import { Calendar, FileText, StickyNote, Clock } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCases, type CaseRecord } from "@/lib/cases";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Endo Made Easy" }] }),
   loader: async () => {
     const user = await getCurrentUser();
-    return { user };
+    let cases: CaseRecord[] = [];
+    if (user) {
+      cases = await getCases();
+    }
+    return { user, cases };
   },
   component: ProfilePage,
 });
 
 function ProfilePage() {
-  const location = useLocation();
-  const { user } = Route.useLoaderData();
-  const [cases, setCases] = useState<CaseRecord[]>([]);
+  const { user, cases } = Route.useLoaderData();
 
   const [filter, setFilter] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user?.email) {
-      setCases(getCases(user.email));
-    }
-  }, [location.pathname, user]);
 
   const displayedCases = filter
     ? cases.filter((c) => (filter === "Follow-up" ? c.status === "Follow-up due" : true))

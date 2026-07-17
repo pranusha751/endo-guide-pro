@@ -1,4 +1,6 @@
-// cases.ts
+import { createServerFn } from "@tanstack/react-start";
+import { getCookie } from "@tanstack/react-start/server";
+
 export type CaseRecord = {
   id: string;
   userId: string;
@@ -13,58 +15,84 @@ export type CaseRecord = {
   fileSystem?: string;
 };
 
-const CASES_KEY = "endo_made_easy_cases";
+const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
 
-export function getCases(userId: string): CaseRecord[] {
-  if (typeof window === "undefined" || !userId) return [];
-
-  const raw = localStorage.getItem(CASES_KEY);
-  if (!raw) return [];
+export const getCases = createServerFn({ method: "GET" }).handler(async (): Promise<CaseRecord[]> => {
+  const token = getCookie("auth_token");
+  if (!token) return [];
+  
   try {
-    const allCases: CaseRecord[] = JSON.parse(raw);
-    return allCases.filter((c) => c.userId === userId).sort((a, b) => b.timestamp - a.timestamp);
-  } catch {
-    return [];
-  }
-}
-
-export function getCaseById(id: string, userId: string): CaseRecord | undefined {
-  const allCases = getCases(userId);
-  return allCases.find((c) => c.id === id);
-}
-
-export function saveCase(
-  caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">,
-  userId: string,
-): CaseRecord | null {
-  if (typeof window === "undefined" || !userId) return null;
-
-  const raw = localStorage.getItem(CASES_KEY);
-  let allCases: CaseRecord[] = [];
-  if (raw) {
-    try {
-      allCases = JSON.parse(raw);
-    } catch {
-      // Ignore parse error
+    const res = await fetch(`${BACKEND_URL}/api/cases`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    if (res.ok) {
+      return await res.json() as CaseRecord[];
     }
+  } catch (error) {
+    console.error("Failed to fetch cases:", error);
   }
+  return [];
+});
 
-  const dateObj = new Date();
-  const dateStr = dateObj.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+export const getCaseById = createServerFn({ method: "GET" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data: id }): Promise<CaseRecord | undefined> => {
+    const token = getCookie("auth_token");
+    if (!token) return undefined;
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/cases/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (res.ok) {
+        return await res.json() as CaseRecord;
+      }
+    } catch (error) {
+      console.error("Failed to fetch case:", error);
+    }
+    return undefined;
   });
 
-  const newCase: CaseRecord = {
-    ...caseData,
-    id: `C-${Math.floor(Math.random() * 900) + 100}`,
-    userId: userId,
-    date: dateStr,
-    timestamp: dateObj.getTime(),
-  };
+export const saveCase = createServerFn({ method: "POST" })
+  .inputValidator((caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">) => caseData)
+  .handler(async ({ data }): Promise<CaseRecord | null> => {
+    const token = getCookie("auth_token");
+    if (!token) return null;
+    
+    const dateObj = new Date();
+    const dateStr = dateObj.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
 
-  allCases.push(newCase);
-  localStorage.setItem(CASES_KEY, JSON.stringify(allCases));
-  return newCase;
-}
+    const payload = {
+      ...data,
+      date: dateStr,
+      timestamp: dateObj.getTime()
+    };
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/cases`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        return await res.json() as CaseRecord;
+      }
+    } catch (error) {
+      console.error("Failed to save case:", error);
+    }
+    return null;
+  });

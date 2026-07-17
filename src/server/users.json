@@ -40,5 +40,11 @@
     "email": "sunny@gmail.com",
     "fullName": "Dr.yaswanth",
     "passwordHash": "$2b$10$T/w8xJj20Db.VeawOoPNXe/4ztDLcljA1Cdpbc9/fQ7hgnkob0wx."
+  },
+  {
+    "id": "bb18aa37-4aab-4f47-984c-96737b8f3066",
+    "email": "saireddy@gmail.com",
+    "fullName": "Dr.Sai Reddy",
+    "passwordHash": "$2b$10$9cZyP.5LaKVC3W9oKiCguuOWWe5ucWSytorcwlx6F7ax5KsOsKqjm"
   }
 ]

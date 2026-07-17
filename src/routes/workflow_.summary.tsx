@@ -40,24 +40,28 @@ function SummaryPage() {
   const protocol = FILE_PROTOCOLS[files as FileSystem];
   const navigate = useNavigate();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) {
       toast.error("Please login to save cases.");
       return;
     }
-    saveCase(
-      {
-        patientName,
-        patientAge,
-        patientGender,
-        tooth,
-        dx: dxInfo?.label || dx,
-        status: "Completed",
-        fileSystem: files,
-      },
-      user.email,
-    );
-    navigate({ to: "/profile" });
+    
+    try {
+      await saveCase({
+        data: {
+          patientName,
+          patientAge,
+          patientGender,
+          tooth,
+          dx: dxInfo?.label || dx,
+          status: "Completed",
+          fileSystem: files,
+        }
+      });
+      navigate({ to: "/profile" });
+    } catch (error) {
+      toast.error("Failed to save case. Please try again.");
+    }
   };
 
   const handleShare = async () => {

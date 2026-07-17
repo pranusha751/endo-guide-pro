@@ -1,8 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
-import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcryptjs";
-import { saveUser, getUserByEmail, User } from "../server/db";
 
 export type AuthUser = {
   id: string;
@@ -13,148 +10,101 @@ export type AuthUser = {
 export type AuthResponse = {
   user: AuthUser | null;
   error: string | null;
+  message?: string | null;
 };
 
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || "endo-guide-pro-super-secret-jwt-key-2026",
-);
-
-async function createToken(user: AuthUser) {
-  return await new SignJWT({ id: user.id, email: user.email, fullName: user.fullName })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(SECRET_KEY);
-}
-
-async function verifyToken(token: string): Promise<AuthUser | null> {
-  try {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    return {
-      id: payload.id as string,
-      email: payload.email as string,
-      fullName: payload.fullName as string | undefined,
-    };
-  } catch {
-    return null;
-  }
-}
+const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
   const token = getCookie("auth_token");
   if (!token) return null;
-  return await verifyToken(token);
+  
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    if (res.ok) {
+      return await res.json() as AuthUser;
+    }
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+  }
+  return null;
 });
 
 export const signInWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
-    if (!data.email || !data.password) {
-      return { user: null, error: "Email and password are required." };
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        return { user: null, error: errData?.error || "Invalid email or password." };
+      }
+
+      const result = await res.json();
+      const authUser: AuthUser = { id: result.id, email: result.email, fullName: result.fullName };
+
+      setCookie("auth_token", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: "/",
+      });
+
+      return { user: authUser, error: null };
+    } catch (error) {
+      return { user: null, error: "Network error. Is the backend running?" };
     }
-
-    const user = await getUserByEmail(data.email);
-    if (!user) {
-      return { user: null, error: "Invalid email or password." };
-    }
-
-    const isValid = bcrypt.compareSync(data.password, user.passwordHash);
-    if (!isValid) {
-      return { user: null, error: "Invalid email or password." };
-    }
-
-    const authUser: AuthUser = { id: user.id, email: user.email, fullName: user.fullName };
-    const token = await createToken(authUser);
-
-    setCookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-
-    return { user: authUser, error: null };
   });
 
 export const signUpWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName: string; email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
-    console.log("signUpWithPassword called:", data.email);
-    if (!data.fullName || !data.email || !data.password) {
-      return { user: null, error: "All fields are required." };
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const errorMsg = Array.isArray(errData?.error) 
+            ? errData.error.map((e: any) => e.message).join(", ") 
+            : errData?.error || "Registration failed.";
+        return { user: null, error: errorMsg };
+      }
+
+      const result = await res.json();
+      
+      // Do not set cookie or return user on signup since they need to verify email
+      return { user: null, error: null, message: result.message };
+    } catch (error) {
+      return { user: null, error: "Network error. Is the backend running?" };
     }
-    if (data.password.length < 6) {
-      return { user: null, error: "Password must be at least 6 characters." };
-    }
-
-    console.log("Getting existing user...");
-    const existingUser = await getUserByEmail(data.email);
-    if (existingUser) {
-      console.log("User already exists");
-      return { user: null, error: "Email is already registered." };
-    }
-
-    console.log("Hashing password...");
-    const passwordHash = bcrypt.hashSync(data.password, 10);
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email: data.email,
-      fullName: data.fullName,
-      passwordHash,
-    };
-
-    console.log("Saving user...");
-    await saveUser(newUser);
-
-    console.log("Creating token...");
-    const authUser: AuthUser = { id: newUser.id, email: newUser.email, fullName: newUser.fullName };
-    const token = await createToken(authUser);
-
-    console.log("Setting cookie...");
-    setCookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-
-    console.log("Done");
-    return { user: authUser, error: null };
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
+  try {
+    await fetch(`${BACKEND_URL}/api/auth/logout`, { method: "POST" });
+  } catch (error) {
+    // Ignore error on logout
+  }
   deleteCookie("auth_token", { path: "/" });
 });
 
 export const signInWithGoogle = createServerFn({ method: "POST" })
   .inputValidator((data?: { email?: string }) => data || {})
   .handler(async ({ data }): Promise<AuthResponse> => {
-    // Mocked for now since real Google OAuth requires a client ID and secret
-    const email = data?.email || "doctor@google.com";
-
-    let user = await getUserByEmail(email);
-    if (!user) {
-      user = {
-        id: crypto.randomUUID(),
-        email,
-        fullName: `Dr. ${email.split("@")[0]}`,
-        passwordHash: bcrypt.hashSync(crypto.randomUUID(), 10), // Random password
-      };
-      await saveUser(user);
-    }
-
-    const authUser: AuthUser = { id: user.id, email: user.email, fullName: user.fullName };
-    const token = await createToken(authUser);
-
-    setCookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
-
-    return { user: authUser, error: null };
+    return { user: null, error: "Google sign-in is not configured on the backend yet." };
   });

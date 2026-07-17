@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { Activity, BookOpen, Stethoscope, Wrench, User, Bell, LogOut } from "lucide-react";
+import { Activity, BookOpen, Stethoscope, Wrench, User, Bell, LogOut, ShieldPlus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { signOut } from "@/lib/auth";
 
@@ -16,14 +16,10 @@ export function AppShell() {
   const isAuthPage = ["/login", "/signup"].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className={`flex-1 ${!isAuthPage ? "pb-24" : ""} overflow-y-auto`}>
-        <div className={`w-full ${!isAuthPage ? "max-w-lg mx-auto px-4" : ""}`}>
-          <Outlet />
-        </div>
-      </main>
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+      {/* Mobile Bottom Navigation */}
       {!isAuthPage && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border z-50">
           <ul className="grid grid-cols-5 px-2 py-2 max-w-lg mx-auto">
             {tabs.map((t) => {
               const active = location.pathname.startsWith(t.to);
@@ -47,6 +43,44 @@ export function AppShell() {
           </ul>
         </nav>
       )}
+
+      {/* Desktop Sidebar */}
+      {!isAuthPage && (
+        <aside className="hidden md:flex flex-col w-64 bg-card/95 border-r border-border fixed top-0 bottom-0 left-0 z-50 py-6">
+          <div className="px-6 mb-8 flex items-center gap-2 text-xl font-bold tracking-tight text-primary">
+            <ShieldPlus className="w-7 h-7" />
+            Endo Guide
+          </div>
+          <ul className="flex flex-col gap-2 px-4 flex-1">
+            {tabs.map((t) => {
+              const active = location.pathname.startsWith(t.to);
+              const Icon = t.icon;
+              return (
+                <li key={t.to}>
+                  <Link
+                    to={t.to}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
+                      active
+                        ? "text-primary-foreground bg-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {t.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </aside>
+      )}
+
+      {/* Main Content Area */}
+      <main className={`flex-1 ${!isAuthPage ? "pb-24 md:pb-8 md:ml-64" : ""} h-screen overflow-y-auto`}>
+        <div className={`w-full ${!isAuthPage ? "max-w-lg md:max-w-5xl mx-auto px-4 md:px-8" : ""}`}>
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 }

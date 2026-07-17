@@ -10,17 +10,19 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/cases/$caseId")({
   head: () => ({ meta: [{ title: "Case Details — Endo Made Easy" }] }),
-  loader: async () => {
+  loader: async ({ params }) => {
     const user = await getCurrentUser();
-    return { user };
+    let caseData = undefined;
+    if (user) {
+      caseData = await getCaseById({ data: params.caseId });
+    }
+    return { user, caseData };
   },
   component: CaseDetailsPage,
 });
 
 function CaseDetailsPage() {
-  const { caseId } = Route.useParams();
-  const { user } = Route.useLoaderData();
-  const caseData = user?.email ? getCaseById(caseId, user.email) : undefined;
+  const { user, caseData } = Route.useLoaderData();
   const navigate = useNavigate();
 
   if (!caseData) {

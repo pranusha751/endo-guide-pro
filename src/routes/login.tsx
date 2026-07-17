@@ -59,7 +59,8 @@ function RouteComponent() {
       }
       navigate({ to: "/workflow" });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred during Google login.";
+      const msg =
+        err instanceof Error ? err.message : "An unexpected error occurred during Google login.";
       setError(msg);
     } finally {
       setLoading(false);
