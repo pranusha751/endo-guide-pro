@@ -107,6 +107,21 @@ for (let tooth of teeth) {
   }
 }
 
+// 5.5 Vulnerability & Security Tests
+const vulnerabilityTests = [
+  "Verify SQL Injection prevention on login form (e.g. ' OR 1=1 --)",
+  "Verify XSS prevention on Case Patient Name field input",
+  "Verify rate limiting on /api/auth/login endpoint prevents brute force",
+  "Verify JWT tokens cannot be forged with 'none' algorithm",
+  "Verify CORS policy strictly allows only frontend origin",
+  "Verify CSRF protection on POST /api/cases",
+  "Verify unauthorized user cannot access /api/cases/:id belonging to others (IDOR)",
+  "Verify file upload endpoint (if any) rejects malicious payload execution",
+  "Verify proper HTTP security headers (Helmet) are enabled on backend",
+  "Verify sensitive data like passwords are never returned in API responses"
+];
+vulnerabilityTests.forEach(t => addTest('Security Vulnerability', t, false));
+
 // 6. Fill remaining to reach exactly 300 (or `count`)
 while (testData.length < count) {
   addTest('Regression', `Verify system stability and memory leaks across prolonged usage (Iteration ${testData.length})`);
