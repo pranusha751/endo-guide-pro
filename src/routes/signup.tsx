@@ -33,6 +33,10 @@ function RouteComponent() {
     setLoading(true);
     try {
       const res = await signUpWithPassword({ data: { fullName: name, email, password } });
+      console.log("Signup response:", res); // Debugging log
+      if (!res) {
+        throw new Error("Server function returned an empty response. Please check the backend.");
+      }
       if (res.error) {
         setError(res.error ?? "Unable to create account.");
         return;
