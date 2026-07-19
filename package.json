@@ -7,7 +7,7 @@
     "start": "node .output/server/index.mjs",
     "start:dev": "vite dev",
     "dev": "vite dev",
-    "build": "node scripts/prepare-env.js && npx prisma generate && npx prisma db push --accept-data-loss && vite build",
+    "build": "node scripts/prepare-env.js && npx prisma generate && vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
