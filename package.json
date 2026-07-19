@@ -4,7 +4,8 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "start": "vite dev",
+    "start": "node .output/server/index.mjs",
+    "start:dev": "vite dev",
     "dev": "vite dev",
     "build": "node scripts/prepare-env.js && npx prisma generate && npx prisma db push --accept-data-loss && vite build",
     "build:dev": "vite build --mode development",

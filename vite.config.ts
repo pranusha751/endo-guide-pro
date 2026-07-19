@@ -5,8 +5,8 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Force native Vercel build
-process.env.NITRO_PRESET = "vercel";
+// Force native Vercel build, unless on Render
+process.env.NITRO_PRESET = process.env.RENDER ? "node-server" : "vercel";
 
 export default defineConfig({
   plugins: [
