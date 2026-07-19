@@ -1,5 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
+import prisma from "./db";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export type AuthUser = {
   id: string;
@@ -13,21 +16,18 @@ export type AuthResponse = {
   message?: string | null;
 };
 
-const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
+const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
   const token = getCookie("auth_token");
   if (!token) return null;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      return (await res.json()) as AuthUser;
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    
+    if (user) {
+      return { id: user.id, email: user.email, fullName: user.fullName } as AuthUser;
     }
   } catch (error) {
     console.error("Failed to fetch user:", error);
@@ -39,21 +39,23 @@ export const signInWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        return { user: null, error: errData?.error || "Invalid email or password." };
+      const user = await prisma.user.findUnique({ where: { email: data.email } });
+      if (!user) {
+        return { user: null, error: "Invalid email or password." };
       }
 
-      const result = await res.json();
-      const authUser: AuthUser = { id: result.id, email: result.email, fullName: result.fullName };
+      const isMatch = await bcrypt.compare(data.password, user.passwordHash);
+      if (!isMatch) {
+        return { user: null, error: "Invalid email or password." };
+      }
 
-      setCookie("auth_token", result.token, {
+      if (!user.isEmailVerified) {
+        return { user: null, error: "Please verify your email before logging in. If you didn't receive an email, click the button below to resend it." };
+      }
+
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+
+      setCookie("auth_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -61,9 +63,9 @@ export const signInWithPassword = createServerFn({ method: "POST" })
         path: "/",
       });
 
-      return { user: authUser, error: null };
+      return { user: { id: user.id, email: user.email, fullName: user.fullName }, error: null };
     } catch (error) {
-      return { user: null, error: "Network error. Is the backend running?" };
+      return { user: null, error: "Database connection error." };
     }
   });
 
@@ -71,26 +73,27 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName: string; email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        const errorMsg = Array.isArray(errData?.error)
-          ? errData.error.map((e: { message: string }) => e.message).join(", ")
-          : errData?.error || "Registration failed.";
-        return { user: null, error: errorMsg };
+      const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+      if (existingUser) {
+        return { user: null, error: "Email already in use." };
       }
 
-      const result = await res.json();
+      const passwordHash = await bcrypt.hash(data.password, 10);
+      const verificationToken = Math.random().toString(36).substring(2, 15);
 
-      // Do not set cookie or return user on signup since they need to verify email
-      return { user: null, error: null, message: result.message };
+      await prisma.user.create({
+        data: {
+          email: data.email,
+          fullName: data.fullName,
+          passwordHash,
+          verificationToken,
+          isEmailVerified: true, // Auto verify for now in dev/prod transition
+        },
+      });
+
+      return { user: null, error: null, message: "Account created successfully. You can now log in." };
     } catch (error) {
-      return { user: null, error: "Network error. Is the backend running?" };
+      return { user: null, error: "Database connection error." };
     }
   });
 
@@ -98,35 +101,26 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string }) => data)
   .handler(async ({ data }): Promise<{ error: string | null; message: string | null }> => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/resend-verification`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        return { error: errData?.error || "Failed to resend verification.", message: null };
+      const user = await prisma.user.findUnique({ where: { email: data.email } });
+      if (!user) {
+        return { error: "User not found.", message: null };
       }
-
-      const result = await res.json();
-      return { error: null, message: result.message };
+      if (user.isEmailVerified) {
+        return { error: "Email is already verified.", message: null };
+      }
+      // Pretend to send email
+      return { error: null, message: "Verification email resent successfully! (Simulation)" };
     } catch (error) {
-      return { error: "Network error. Is the backend running?", message: null };
+      return { error: "Database connection error.", message: null };
     }
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
-  try {
-    await fetch(`${BACKEND_URL}/api/auth/logout`, { method: "POST" });
-  } catch (error) {
-    // Ignore error on logout
-  }
   deleteCookie("auth_token", { path: "/" });
 });
 
 export const signInWithGoogle = createServerFn({ method: "POST" })
   .inputValidator((data?: { email?: string }) => data || {})
   .handler(async ({ data }): Promise<AuthResponse> => {
-    return { user: null, error: "Google sign-in is not configured on the backend yet." };
+    return { user: null, error: "Google sign-in is not configured yet." };
   });

@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
+import prisma from "./db";
+import jwt from "jsonwebtoken";
 
 export type CaseRecord = {
   id: string;
@@ -15,23 +17,31 @@ export type CaseRecord = {
   fileSystem?: string;
 };
 
-const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
+const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
+
+const getUserIdFromToken = (token: string): string | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    return decoded.userId;
+  } catch {
+    return null;
+  }
+};
 
 export const getCases = createServerFn({ method: "GET" }).handler(
   async (): Promise<CaseRecord[]> => {
     const token = getCookie("auth_token");
     if (!token) return [];
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/cases`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const userId = getUserIdFromToken(token);
+    if (!userId) return [];
 
-      if (res.ok) {
-        return (await res.json()) as CaseRecord[];
-      }
+    try {
+      const cases = await prisma.case.findMany({
+        where: { userId },
+        orderBy: { timestamp: "desc" },
+      });
+      return cases as unknown as CaseRecord[];
     } catch (error) {
       console.error("Failed to fetch cases:", error);
     }
@@ -45,15 +55,15 @@ export const getCaseById = createServerFn({ method: "GET" })
     const token = getCookie("auth_token");
     if (!token) return undefined;
 
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/cases/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    const userId = getUserIdFromToken(token);
+    if (!userId) return undefined;
 
-      if (res.ok) {
-        return (await res.json()) as CaseRecord;
+    try {
+      const caseRecord = await prisma.case.findFirst({
+        where: { id, userId },
+      });
+      if (caseRecord) {
+        return caseRecord as unknown as CaseRecord;
       }
     } catch (error) {
       console.error("Failed to fetch case:", error);
@@ -67,6 +77,9 @@ export const saveCase = createServerFn({ method: "POST" })
     const token = getCookie("auth_token");
     if (!token) return null;
 
+    const userId = getUserIdFromToken(token);
+    if (!userId) return null;
+
     const dateObj = new Date();
     const dateStr = dateObj.toLocaleDateString(undefined, {
       month: "short",
@@ -74,25 +87,23 @@ export const saveCase = createServerFn({ method: "POST" })
       year: "numeric",
     });
 
-    const payload = {
-      ...data,
-      date: dateStr,
-      timestamp: dateObj.getTime(),
-    };
-
     try {
-      const res = await fetch(`${BACKEND_URL}/api/cases`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const newCase = await prisma.case.create({
+        data: {
+          userId,
+          patientName: data.patientName || null,
+          patientAge: data.patientAge || null,
+          patientGender: data.patientGender || null,
+          tooth: data.tooth,
+          dx: data.dx,
+          date: dateStr,
+          timestamp: dateObj.getTime(),
+          status: data.status,
+          fileSystem: data.fileSystem || null,
         },
-        body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        return (await res.json()) as CaseRecord;
-      }
+      return newCase as unknown as CaseRecord;
     } catch (error) {
       console.error("Failed to save case:", error);
     }
