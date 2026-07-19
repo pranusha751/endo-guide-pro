@@ -25,7 +25,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-    
+
     if (user) {
       return { id: user.id, email: user.email, fullName: user.fullName } as AuthUser;
     }
@@ -50,7 +50,11 @@ export const signInWithPassword = createServerFn({ method: "POST" })
       }
 
       if (!user.isEmailVerified) {
-        return { user: null, error: "Please verify your email before logging in. If you didn't receive an email, click the button below to resend it." };
+        return {
+          user: null,
+          error:
+            "Please verify your email before logging in. If you didn't receive an email, click the button below to resend it.",
+        };
       }
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
@@ -91,7 +95,11 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
         },
       });
 
-      return { user: null, error: null, message: "Account created successfully. You can now log in." };
+      return {
+        user: null,
+        error: null,
+        message: "Account created successfully. You can now log in.",
+      };
     } catch (error) {
       return { user: null, error: "Database connection error." };
     }

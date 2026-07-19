@@ -6,11 +6,16 @@ import tsConfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
 
 // Force native Vercel build, unless on Render
-process.env.NITRO_PRESET = process.env.RENDER ? "node-server" : "vercel";
+const serverPreset = process.env.RENDER ? "node-server" : "vercel";
+process.env.NITRO_PRESET = serverPreset;
 
 export default defineConfig({
   plugins: [
-    tanstackStart(),
+    tanstackStart({
+      server: {
+        preset: serverPreset,
+      },
+    }),
     react(),
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
