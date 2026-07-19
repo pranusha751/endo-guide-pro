@@ -18,16 +18,16 @@ const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
   const token = getCookie("auth_token");
   if (!token) return null;
-  
+
   try {
     const res = await fetch(`${BACKEND_URL}/api/auth/me`, {
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
-    
+
     if (res.ok) {
-      return await res.json() as AuthUser;
+      return (await res.json()) as AuthUser;
     }
   } catch (error) {
     console.error("Failed to fetch user:", error);
@@ -79,18 +79,40 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        const errorMsg = Array.isArray(errData?.error) 
-            ? errData.error.map((e: any) => e.message).join(", ") 
-            : errData?.error || "Registration failed.";
+        const errorMsg = Array.isArray(errData?.error)
+          ? errData.error.map((e: { message: string }) => e.message).join(", ")
+          : errData?.error || "Registration failed.";
         return { user: null, error: errorMsg };
       }
 
       const result = await res.json();
-      
+
       // Do not set cookie or return user on signup since they need to verify email
       return { user: null, error: null, message: result.message };
     } catch (error) {
       return { user: null, error: "Network error. Is the backend running?" };
+    }
+  });
+
+export const resendVerificationEmail = createServerFn({ method: "POST" })
+  .inputValidator((data: { email: string }) => data)
+  .handler(async ({ data }): Promise<{ error: string | null; message: string | null }> => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        return { error: errData?.error || "Failed to resend verification.", message: null };
+      }
+
+      const result = await res.json();
+      return { error: null, message: result.message };
+    } catch (error) {
+      return { error: "Network error. Is the backend running?", message: null };
     }
   });
 

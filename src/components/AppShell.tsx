@@ -1,5 +1,14 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { Activity, BookOpen, Stethoscope, Wrench, User, Bell, LogOut, ShieldPlus } from "lucide-react";
+import {
+  Activity,
+  BookOpen,
+  Stethoscope,
+  Wrench,
+  User,
+  Bell,
+  LogOut,
+  ShieldPlus,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { signOut } from "@/lib/auth";
 
@@ -76,8 +85,12 @@ export function AppShell() {
       )}
 
       {/* Main Content Area */}
-      <main className={`flex-1 ${!isAuthPage ? "pb-24 md:pb-8 md:ml-64" : ""} h-screen overflow-y-auto`}>
-        <div className={`w-full ${!isAuthPage ? "max-w-lg md:max-w-5xl mx-auto px-4 md:px-8" : ""}`}>
+      <main
+        className={`flex-1 ${!isAuthPage ? "pb-24 md:pb-8 md:ml-64" : ""} h-screen overflow-y-auto`}
+      >
+        <div
+          className={`w-full ${!isAuthPage ? "max-w-lg md:max-w-5xl mx-auto px-4 md:px-8" : ""}`}
+        >
           <Outlet />
         </div>
       </main>

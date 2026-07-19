@@ -42,12 +42,15 @@ router.post("/register", async (req, res) => {
         fullName: data.fullName,
         passwordHash,
         verificationToken,
+        isEmailVerified: true, // Bypassed for development
       },
     });
 
     await sendVerificationEmail(user.email, verificationToken);
 
-    res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
+    res.status(201).json({
+      message: "Registration successful. You can now log in.",
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ error: error.issues });
@@ -139,6 +142,40 @@ router.get("/verify", async (req, res) => {
     });
 
     res.json({ success: true, message: "Email successfully verified!" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/resend-verification", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ error: "Email is required" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    if (user.isEmailVerified) {
+      res.status(400).json({ error: "Email is already verified" });
+      return;
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { verificationToken },
+    });
+
+    await sendVerificationEmail(user.email, verificationToken);
+
+    res.status(200).json({ message: "Verification email sent successfully." });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }

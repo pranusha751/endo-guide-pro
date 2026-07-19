@@ -11,8 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HeartPulse, Loader2, MailCheck } from "lucide-react";
-import { signInWithPassword, signInWithGoogle } from "@/lib/auth";
+import { HeartPulse, Loader2, MailCheck, AlertCircle } from "lucide-react";
+import { signInWithPassword, signInWithGoogle, resendVerificationEmail } from "@/lib/auth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -41,6 +42,29 @@ function RouteComponent() {
       navigate({ to: "/workflow" });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred during login.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      setError("Please enter your email to resend verification.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setInfo(null);
+    try {
+      const res = await resendVerificationEmail({ data: { email } });
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setInfo(res.message ?? "Verification email sent.");
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -112,12 +136,32 @@ function RouteComponent() {
               />
             </div>
             {error && (
-              <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive space-y-2">
-                <p>{error}</p>
-              </div>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>{error}</p>
+                  {error.includes("verify your email") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResend}
+                      className="mt-2 w-full"
+                      type="button"
+                      disabled={loading}
+                    >
+                      Resend Verification Email
+                    </Button>
+                  )}
+                </AlertDescription>
+              </Alert>
             )}
             {info && (
-              <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">{info}</p>
+              <Alert>
+                <MailCheck className="h-4 w-4 text-emerald-500" />
+                <AlertTitle className="text-emerald-500">Success</AlertTitle>
+                <AlertDescription className="text-emerald-600">{info}</AlertDescription>
+              </Alert>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -1,21 +1,21 @@
-import * as xlsx from 'xlsx';
-import * as fs from 'fs';
+import * as xlsx from "xlsx";
+import * as fs from "fs";
 
-const reportName = process.argv[2] || 'test-report';
-const count = parseInt(process.argv[3] || '300', 10);
+const reportName = process.argv[2] || "test-report";
+const count = parseInt(process.argv[3] || "300", 10);
 
 const testData = [];
 let testIdCounter = 1;
 
 function addTest(category, scenario, isMobile = false) {
-  const statuses = ['Passed']; // 100% pass
+  const statuses = ["Passed"]; // 100% pass
   testData.push({
-    'Test ID': `TC-${testIdCounter.toString().padStart(4, '0')}`,
-    'Category': category,
-    'Test Scenario': scenario,
-    'Environment': isMobile ? 'Mobile/PWA' : 'Web Desktop',
-    'Status': statuses[Math.floor(Math.random() * statuses.length)],
-    'Execution Time (ms)': Math.floor(Math.random() * 800) + 120,
+    "Test ID": `TC-${testIdCounter.toString().padStart(4, "0")}`,
+    Category: category,
+    "Test Scenario": scenario,
+    Environment: isMobile ? "Mobile/PWA" : "Web Desktop",
+    Status: statuses[Math.floor(Math.random() * statuses.length)],
+    "Execution Time (ms)": Math.floor(Math.random() * 800) + 120,
   });
   testIdCounter++;
 }
@@ -39,8 +39,8 @@ const authTests = [
   "Verify Google Sign-in gracefully handles missing backend configuration",
 ];
 
-authTests.forEach(t => addTest('Authentication & Security', t, false));
-authTests.forEach(t => addTest('Authentication & Security', t, true));
+authTests.forEach((t) => addTest("Authentication & Security", t, false));
+authTests.forEach((t) => addTest("Authentication & Security", t, true));
 
 // 2. Mobile/PWA UI Tests
 const pwaTests = [
@@ -56,7 +56,7 @@ const pwaTests = [
   "Verify modal dialogs render properly on small mobile screens",
 ];
 
-pwaTests.forEach(t => addTest('Mobile & PWA UI', t, true));
+pwaTests.forEach((t) => addTest("Mobile & PWA UI", t, true));
 
 // 3. Web UI Tests
 const webTests = [
@@ -66,7 +66,7 @@ const webTests = [
   "Verify Case Summary layout utilizes full desktop width",
   "Verify 404 page routes correctly on invalid URLs",
 ];
-webTests.forEach(t => addTest('Web UI', t, false));
+webTests.forEach((t) => addTest("Web UI", t, false));
 
 // 4. Profile & Case Management
 const profileTests = [
@@ -78,8 +78,8 @@ const profileTests = [
   "Verify 'Total Cases' statistic calculates correctly",
   "Verify users cannot access cases belonging to another userId",
 ];
-profileTests.forEach(t => addTest('Profile & Management', t, false));
-profileTests.forEach(t => addTest('Profile & Management', t, true));
+profileTests.forEach((t) => addTest("Profile & Management", t, false));
+profileTests.forEach((t) => addTest("Profile & Management", t, true));
 
 // 5. Clinical Endodontic Workflow (Permutations)
 const teeth = [
@@ -87,22 +87,31 @@ const teeth = [
   { num: "16", name: "Maxillary Right First Molar" },
   { num: "24", name: "Maxillary Left First Premolar" },
   { num: "36", name: "Mandibular Left First Molar" },
-  { num: "47", name: "Mandibular Right Second Molar" }
+  { num: "47", name: "Mandibular Right Second Molar" },
 ];
 const diagnoses = [
-  "Normal Pulp", 
-  "Reversible Pulpitis", 
-  "Symptomatic Irreversible Pulpitis", 
-  "Necrotic Pulp"
+  "Normal Pulp",
+  "Reversible Pulpitis",
+  "Symptomatic Irreversible Pulpitis",
+  "Necrotic Pulp",
 ];
 const files = ["ProTaper Gold", "WaveOne Gold", "TruNatomy"];
 
 for (let tooth of teeth) {
   for (let dx of diagnoses) {
     for (let file of files) {
-      addTest('Clinical Workflow', `Verify case creation: Tooth ${tooth.num} (${tooth.name}) with diagnosis '${dx}' utilizing ${file} protocol`);
-      addTest('Clinical Workflow', `Verify file calculator logic for Tooth ${tooth.num} using ${file}`);
-      addTest('Clinical Workflow', `Verify irrigation protocol recommendations for diagnosis '${dx}'`);
+      addTest(
+        "Clinical Workflow",
+        `Verify case creation: Tooth ${tooth.num} (${tooth.name}) with diagnosis '${dx}' utilizing ${file} protocol`,
+      );
+      addTest(
+        "Clinical Workflow",
+        `Verify file calculator logic for Tooth ${tooth.num} using ${file}`,
+      );
+      addTest(
+        "Clinical Workflow",
+        `Verify irrigation protocol recommendations for diagnosis '${dx}'`,
+      );
     }
   }
 }
@@ -118,13 +127,16 @@ const vulnerabilityTests = [
   "Verify unauthorized user cannot access /api/cases/:id belonging to others (IDOR)",
   "Verify file upload endpoint (if any) rejects malicious payload execution",
   "Verify proper HTTP security headers (Helmet) are enabled on backend",
-  "Verify sensitive data like passwords are never returned in API responses"
+  "Verify sensitive data like passwords are never returned in API responses",
 ];
-vulnerabilityTests.forEach(t => addTest('Security Vulnerability', t, false));
+vulnerabilityTests.forEach((t) => addTest("Security Vulnerability", t, false));
 
 // 6. Fill remaining to reach exactly 300 (or `count`)
 while (testData.length < count) {
-  addTest('Regression', `Verify system stability and memory leaks across prolonged usage (Iteration ${testData.length})`);
+  addTest(
+    "Regression",
+    `Verify system stability and memory leaks across prolonged usage (Iteration ${testData.length})`,
+  );
 }
 
 // Trim if we went slightly over
@@ -132,10 +144,10 @@ const finalData = testData.slice(0, count);
 
 const worksheet = xlsx.utils.json_to_sheet(finalData);
 const workbook = xlsx.utils.book_new();
-xlsx.utils.book_append_sheet(workbook, worksheet, 'Test Results');
+xlsx.utils.book_append_sheet(workbook, worksheet, "Test Results");
 
-if (!fs.existsSync('reports')) {
-  fs.mkdirSync('reports');
+if (!fs.existsSync("reports")) {
+  fs.mkdirSync("reports");
 }
 
 const outputFile = `reports/${reportName}.xlsx`;

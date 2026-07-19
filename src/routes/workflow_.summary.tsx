@@ -45,7 +45,7 @@ function SummaryPage() {
       toast.error("Please login to save cases.");
       return;
     }
-    
+
     try {
       await saveCase({
         data: {
@@ -56,7 +56,7 @@ function SummaryPage() {
           dx: dxInfo?.label || dx,
           status: "Completed",
           fileSystem: files,
-        }
+        },
       });
       navigate({ to: "/profile" });
     } catch (error) {

@@ -4,8 +4,8 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "start": "vite dev",
-    "dev": "vite dev",
+    "start": "concurrently \"vite dev\" \"cd Backend && npm run dev\"",
+    "dev": "concurrently \"vite dev\" \"cd Backend && npm run dev\"",
     "build": "vite build && node scripts/move-output.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
@@ -81,6 +81,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^10.0.3",
     "esbuild": "^0.25.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",

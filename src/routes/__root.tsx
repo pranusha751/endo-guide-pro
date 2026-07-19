@@ -31,7 +31,10 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Endo Made Easy — Clinical Decision Support" },
-      { name: "description", content: "Step-by-step root canal workflow assistant for general dental practitioners." },
+      {
+        name: "description",
+        content: "Step-by-step root canal workflow assistant for general dental practitioners.",
+      },
       { name: "theme-color", content: "#A7F3D0" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },

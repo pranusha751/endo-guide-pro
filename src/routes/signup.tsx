@@ -74,17 +74,17 @@ function RouteComponent() {
         <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border">
           <CardHeader className="space-y-2 text-center">
             <div className="mb-2 flex justify-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <MailCheck className="h-6 w-6 text-primary" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
+                <MailCheck className="h-6 w-6 text-emerald-500" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+            <CardTitle className="text-2xl font-bold">Account Created</CardTitle>
             <CardDescription className="text-sm pt-2">{success}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-             <Button onClick={() => navigate({ to: "/login" })} className="w-full mt-4">
-               Go to Login
-             </Button>
+            <Button onClick={() => navigate({ to: "/login" })} className="w-full mt-4">
+              Go to Login
+            </Button>
           </CardContent>
         </Card>
       </div>

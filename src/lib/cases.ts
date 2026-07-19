@@ -17,41 +17,43 @@ export type CaseRecord = {
 
 const BACKEND_URL = process.env.VITE_BACKEND_URL || "http://localhost:4000";
 
-export const getCases = createServerFn({ method: "GET" }).handler(async (): Promise<CaseRecord[]> => {
-  const token = getCookie("auth_token");
-  if (!token) return [];
-  
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/cases`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+export const getCases = createServerFn({ method: "GET" }).handler(
+  async (): Promise<CaseRecord[]> => {
+    const token = getCookie("auth_token");
+    if (!token) return [];
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/cases`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        return (await res.json()) as CaseRecord[];
       }
-    });
-    
-    if (res.ok) {
-      return await res.json() as CaseRecord[];
+    } catch (error) {
+      console.error("Failed to fetch cases:", error);
     }
-  } catch (error) {
-    console.error("Failed to fetch cases:", error);
-  }
-  return [];
-});
+    return [];
+  },
+);
 
 export const getCaseById = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }): Promise<CaseRecord | undefined> => {
     const token = getCookie("auth_token");
     if (!token) return undefined;
-    
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/cases/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (res.ok) {
-        return await res.json() as CaseRecord;
+        return (await res.json()) as CaseRecord;
       }
     } catch (error) {
       console.error("Failed to fetch case:", error);
@@ -64,7 +66,7 @@ export const saveCase = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<CaseRecord | null> => {
     const token = getCookie("auth_token");
     if (!token) return null;
-    
+
     const dateObj = new Date();
     const dateStr = dateObj.toLocaleDateString(undefined, {
       month: "short",
@@ -75,21 +77,21 @@ export const saveCase = createServerFn({ method: "POST" })
     const payload = {
       ...data,
       date: dateStr,
-      timestamp: dateObj.getTime()
+      timestamp: dateObj.getTime(),
     };
-    
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/cases`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
-      
+
       if (res.ok) {
-        return await res.json() as CaseRecord;
+        return (await res.json()) as CaseRecord;
       }
     } catch (error) {
       console.error("Failed to save case:", error);
