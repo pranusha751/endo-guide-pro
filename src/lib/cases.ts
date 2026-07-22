@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
-import prisma from "./db";
+import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
 
 export type CaseRecord = {
@@ -19,14 +19,24 @@ export type CaseRecord = {
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
 
-const getUserIdFromToken = (token: string): string | null => {
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || "";
+  const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || "";
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+function getUserIdFromToken(token: string): string | null {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     return decoded.userId;
   } catch {
     return null;
   }
-};
+}
+
+// ─── Get Cases ────────────────────────────────────────────────────────────────
 
 export const getCases = createServerFn({ method: "GET" }).handler(
   async (): Promise<CaseRecord[]> => {
@@ -37,17 +47,27 @@ export const getCases = createServerFn({ method: "GET" }).handler(
     if (!userId) return [];
 
     try {
-      const cases = await prisma.case.findMany({
-        where: { userId },
-        orderBy: { timestamp: "desc" },
-      });
-      return cases as unknown as CaseRecord[];
-    } catch (error) {
-      console.error("Failed to fetch cases:", error);
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from("Case")
+        .select("*")
+        .eq("userId", userId)
+        .order("timestamp", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch cases:", error.message);
+        return [];
+      }
+
+      return (data ?? []) as unknown as CaseRecord[];
+    } catch (err) {
+      console.error("Failed to fetch cases:", err);
+      return [];
     }
-    return [];
   },
 );
+
+// ─── Get Case By ID ───────────────────────────────────────────────────────────
 
 export const getCaseById = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
@@ -59,17 +79,23 @@ export const getCaseById = createServerFn({ method: "GET" })
     if (!userId) return undefined;
 
     try {
-      const caseRecord = await prisma.case.findFirst({
-        where: { id, userId },
-      });
-      if (caseRecord) {
-        return caseRecord as unknown as CaseRecord;
-      }
-    } catch (error) {
-      console.error("Failed to fetch case:", error);
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from("Case")
+        .select("*")
+        .eq("id", id)
+        .eq("userId", userId)
+        .single();
+
+      if (error || !data) return undefined;
+      return data as unknown as CaseRecord;
+    } catch (err) {
+      console.error("Failed to fetch case:", err);
+      return undefined;
     }
-    return undefined;
   });
+
+// ─── Save Case ────────────────────────────────────────────────────────────────
 
 export const saveCase = createServerFn({ method: "POST" })
   .inputValidator((caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">) => caseData)
@@ -88,8 +114,12 @@ export const saveCase = createServerFn({ method: "POST" })
     });
 
     try {
-      const newCase = await prisma.case.create({
-        data: {
+      const supabase = getSupabaseClient();
+      const now = new Date().toISOString();
+      const { data: newCase, error } = await supabase
+        .from("Case")
+        .insert({
+          id: crypto.randomUUID(),
           userId,
           patientName: data.patientName || null,
           patientAge: data.patientAge || null,
@@ -100,12 +130,20 @@ export const saveCase = createServerFn({ method: "POST" })
           timestamp: dateObj.getTime(),
           status: data.status,
           fileSystem: data.fileSystem || null,
-        },
-      });
+          createdAt: now,
+          updatedAt: now,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Failed to save case:", error.message);
+        return null;
+      }
 
       return newCase as unknown as CaseRecord;
-    } catch (error) {
-      console.error("Failed to save case:", error);
+    } catch (err) {
+      console.error("Failed to save case:", err);
+      return null;
     }
-    return null;
   });
