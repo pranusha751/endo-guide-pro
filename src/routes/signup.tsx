@@ -153,8 +153,9 @@ function RouteComponent() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                type="password"
-                autoComplete="new-password"
+                type="text"
+                style={{ WebkitTextSecurity: "disc" } as any}
+                autoComplete="off"
                 placeholder="At least 6 characters"
                 required
                 value={password}

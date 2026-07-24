@@ -141,8 +141,9 @@ function RouteComponent() {
               </div>
               <Input
                 id="password"
-                type="password"
-                autoComplete="current-password"
+                type="text"
+                style={{ WebkitTextSecurity: "disc" } as any}
+                autoComplete="off"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
