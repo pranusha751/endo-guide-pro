@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { signOut } from "@/lib/auth";
+import { usePWA } from "@/hooks/usePWA";
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -23,6 +24,7 @@ const tabs = [
 export function AppShell() {
   const location = useLocation();
   const isAuthPage = ["/login", "/signup"].includes(location.pathname);
+  const { isInstallable, isInstalled, install } = usePWA();
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
@@ -81,6 +83,21 @@ export function AppShell() {
               );
             })}
           </ul>
+
+          {isInstallable && !isInstalled && (
+            <div className="px-4 mt-auto">
+              <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-center">
+                <p className="text-xs font-semibold text-primary mb-1">Get the App</p>
+                <p className="text-[11px] text-muted-foreground mb-3">Install Endo Guide Pro for offline support and faster access.</p>
+                <button
+                  onClick={install}
+                  className="w-full py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-soft hover:bg-primary/95 transition-colors cursor-pointer"
+                >
+                  Install App
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
       )}
 

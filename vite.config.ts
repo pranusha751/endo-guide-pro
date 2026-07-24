@@ -11,11 +11,7 @@ process.env.NITRO_PRESET = serverPreset;
 
 export default defineConfig({
   plugins: [
-    tanstackStart({
-      server: {
-        preset: serverPreset,
-      },
-    }),
+    tanstackStart(),
     react(),
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
