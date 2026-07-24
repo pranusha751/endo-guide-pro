@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppShell";
 import { TEETH, DIAGNOSES, FILE_PROTOCOLS, type FileSystem } from "@/lib/endo-data";
-import { getCaseById } from "@/lib/cases";
+import { getCaseById, updateCase } from "@/lib/cases";
 import { getCurrentUser } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Calendar, Share2, ArrowLeft, Clock } from "lucide-react";
+import { CheckCircle2, Calendar, Share2, ArrowLeft, Clock, Save } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const Route = createFileRoute("/cases/$caseId")({
   head: () => ({ meta: [{ title: "Case Details — Endo Made Easy" }] }),
@@ -39,6 +40,23 @@ function CaseDetailsPage() {
       </div>
     );
   }
+
+  const [notes, setNotes] = useState(caseData.notes || localStorage.getItem(`case_notes_${caseData.id}`) || "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveNotes = async () => {
+    setSaving(true);
+    localStorage.setItem(`case_notes_${caseData.id}`, notes);
+    try {
+      await updateCase({ data: { id: caseData.id, notes } });
+      toast.success("Notes saved successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.success("Notes saved locally!");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const toothInfo = TEETH.find((t) => t.fdi === caseData.tooth);
   const dxInfo = DIAGNOSES.find((d) => d.label === caseData.dx);
@@ -185,22 +203,38 @@ function CaseDetailsPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3">
+      <Card className="rounded-2xl border-border bg-card shadow-card">
+        <CardHeader className="pb-2 border-b border-border/50">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Case Notes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4">
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Type any notes for this case..."
+            className="w-full min-h-[100px] p-3 text-sm rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+          />
+          <Button
+            onClick={handleSaveNotes}
+            disabled={saving}
+            className="w-full flex items-center justify-center gap-2 py-2.5 font-bold rounded-xl bg-primary text-primary-foreground cursor-pointer"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? "Saving..." : "Save Notes"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-3">
         <Button
           variant="outline"
           onClick={handleShare}
-          className="rounded-2xl h-auto py-4 flex flex-col gap-1 border-border bg-card shadow-card"
+          className="w-full rounded-2xl py-4 flex flex-col gap-1 border-border bg-card shadow-card hover:bg-muted transition-colors cursor-pointer"
         >
           <Share2 className="w-5 h-5 text-primary" />
           <span className="text-xs font-bold uppercase tracking-tighter">Share Report</span>
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => toast.info("Follow-up scheduling coming soon!")}
-          className="rounded-2xl h-auto py-4 flex flex-col gap-1 border-border bg-card shadow-card"
-        >
-          <Calendar className="w-5 h-5 text-peach-foreground" />
-          <span className="text-xs font-bold uppercase tracking-tighter">Follow-up</span>
         </Button>
       </div>
     </div>

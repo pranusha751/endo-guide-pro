@@ -1,11 +1,10 @@
 import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
 import { PageHeader } from "@/components/AppShell";
-import { Calendar, FileText, StickyNote, Clock, Smartphone, Download, CheckCircle } from "lucide-react";
+import { Calendar, FileText, StickyNote, Clock } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCases, type CaseRecord } from "@/lib/cases";
 import { useState } from "react";
 import { toast } from "sonner";
-import { usePWA } from "@/hooks/usePWA";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Endo Made Easy" }] }),
@@ -22,12 +21,28 @@ export const Route = createFileRoute("/profile")({
 
 function ProfilePage() {
   const { user, cases } = Route.useLoaderData();
-  const { isInstallable, isInstalled, install } = usePWA();
 
   const [filter, setFilter] = useState<string | null>(null);
+  const [generalNotes, setGeneralNotes] = useState(
+    typeof window !== "undefined" ? localStorage.getItem("endo_general_notes") || "" : ""
+  );
+  const [savingNotes, setSavingNotes] = useState(false);
+
+  const saveGeneralNotes = () => {
+    setSavingNotes(true);
+    localStorage.setItem("endo_general_notes", generalNotes);
+    setTimeout(() => {
+      setSavingNotes(false);
+      toast.success("General notes saved successfully!");
+    }, 400);
+  };
 
   const displayedCases = filter
-    ? cases.filter((c) => (filter === "Follow-up" ? c.status === "Follow-up due" : true))
+    ? cases.filter((c) => {
+        if (filter === "Follow-up") return c.status === "Follow-up due";
+        if (filter === "Notes") return !!c.notes;
+        return true;
+      })
     : cases;
 
   let displayName = "Doctor";
@@ -58,13 +73,13 @@ function ProfilePage() {
           <div>
             <div className="font-semibold text-mint-foreground">{cases.length} cases total</div>
             <div className="text-xs text-mint-foreground/80">
-              {cases.filter((c) => c.status === "Follow-up due").length} follow-ups scheduled
+              {cases.filter((c) => !!c.notes).length} cases with notes
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <Stat
           icon={FileText}
           value={cases.length.toString()}
@@ -73,67 +88,33 @@ function ProfilePage() {
           onClick={() => setFilter(null)}
         />
         <Stat
-          icon={Calendar}
-          value={cases.filter((c) => c.status === "Follow-up due").length.toString()}
-          label="Follow-up"
-          isActive={filter === "Follow-up"}
-          onClick={() => setFilter("Follow-up")}
-        />
-        <Stat
           icon={StickyNote}
-          value="0"
+          value={cases.filter((c) => !!c.notes).length.toString()}
           label="Notes"
           isActive={filter === "Notes"}
-          onClick={() => toast.info("Notes feature coming soon!")}
+          onClick={() => setFilter("Notes")}
         />
       </div>
-
-      {/* App Installation Section */}
-      <div className="rounded-2xl bg-card border border-border p-5 mb-6 shadow-card">
-        <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-          <Smartphone className="w-4 h-4 text-primary" /> App Installation
-        </h3>
-        
-        {isInstalled ? (
-          <div className="flex items-center gap-3 text-sm text-mint-foreground bg-mint/10 p-4 rounded-xl border border-mint/20">
-            <CheckCircle className="w-5 h-5 text-mint flex-shrink-0" />
-            <div>
-              <p className="font-semibold text-foreground">Installed Successfully</p>
-              <p className="text-xs text-muted-foreground">You are running Endo Guide Pro as a standalone app.</p>
-            </div>
+      {filter === "Notes" && (
+        <div className="rounded-2xl bg-card border border-border p-5 mb-6 shadow-card space-y-4">
+          <div className="flex items-center gap-2 text-primary font-bold text-sm">
+            <StickyNote className="w-5 h-5" /> General Notes Pad
           </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Install Endo Guide Pro to access it directly from your home screen, enjoy native app performance, and calculate workflows offline.
-            </p>
-            
-            {isInstallable ? (
-              <button
-                onClick={install}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl shadow-soft hover:bg-primary/95 transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4" /> Install App Now
-              </button>
-            ) : (
-              <div className="bg-accent/40 rounded-xl p-4 border border-border">
-                <p className="text-xs font-semibold text-foreground mb-2">How to install on your device:</p>
-                <ul className="text-[11px] text-muted-foreground space-y-2 list-disc pl-4">
-                  <li>
-                    <strong className="text-foreground">iOS (iPhone/iPad):</strong> Open Safari, tap the <span className="underline">Share</span> icon, then select <strong className="text-foreground">Add to Home Screen</strong>.
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Android/Chrome:</strong> Tap the three-dot menu at the top right of your browser, then select <strong className="text-foreground">Install app</strong>.
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Desktop:</strong> Click the install icon in the address bar at the top right.
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          <textarea
+            value={generalNotes}
+            onChange={(e) => setGeneralNotes(e.target.value)}
+            placeholder="Type any general notes or protocols for reference here..."
+            className="w-full min-h-[120px] p-3 text-sm rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-y"
+          />
+          <button
+            onClick={saveGeneralNotes}
+            disabled={savingNotes}
+            className="w-full flex items-center justify-center gap-2 py-2 bg-primary text-primary-foreground font-bold rounded-xl shadow-soft hover:bg-primary/95 transition-colors cursor-pointer"
+          >
+            {savingNotes ? "Saving..." : "Save General Notes"}
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">

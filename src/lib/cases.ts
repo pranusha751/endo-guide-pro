@@ -15,6 +15,7 @@ export type CaseRecord = {
   timestamp: number;
   status: string;
   fileSystem?: string;
+  notes?: string;
 };
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
@@ -147,3 +148,43 @@ export const saveCase = createServerFn({ method: "POST" })
       return null;
     }
   });
+
+export const updateCase = createServerFn({ method: "POST" })
+  .inputValidator((caseData: { id: string; status?: string; notes?: string }) => caseData)
+  .handler(async ({ data }): Promise<CaseRecord | null> => {
+    const token = getCookie("auth_token");
+    if (!token) return null;
+
+    const userId = getUserIdFromToken(token);
+    if (!userId) return null;
+
+    try {
+      const supabase = getSupabaseClient();
+      const now = new Date().toISOString();
+      
+      const updateData: Record<string, any> = {
+        updatedAt: now,
+      };
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+
+      const { data: updatedCase, error } = await supabase
+        .from("Case")
+        .update(updateData)
+        .eq("id", data.id)
+        .eq("userId", userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Failed to update case:", error.message);
+        return null;
+      }
+
+      return updatedCase as unknown as CaseRecord;
+    } catch (err) {
+      console.error("Failed to update case:", err);
+      return null;
+    }
+  });
+

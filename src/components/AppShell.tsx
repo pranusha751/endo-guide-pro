@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import {
   Activity,
   BookOpen,
@@ -8,10 +9,11 @@ import {
   Bell,
   LogOut,
   ShieldPlus,
+  CheckCircle,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { signOut } from "@/lib/auth";
-import { usePWA } from "@/hooks/usePWA";
+
 
 const tabs = [
   { to: "/workflow", label: "Workflow", icon: Activity },
@@ -24,8 +26,6 @@ const tabs = [
 export function AppShell() {
   const location = useLocation();
   const isAuthPage = ["/login", "/signup"].includes(location.pathname);
-  const { isInstallable, isInstalled, install } = usePWA();
-
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
       {/* Mobile Bottom Navigation */}
@@ -83,21 +83,6 @@ export function AppShell() {
               );
             })}
           </ul>
-
-          {isInstallable && !isInstalled && (
-            <div className="px-4 mt-auto">
-              <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 text-center">
-                <p className="text-xs font-semibold text-primary mb-1">Get the App</p>
-                <p className="text-[11px] text-muted-foreground mb-3">Install Endo Guide Pro for offline support and faster access.</p>
-                <button
-                  onClick={install}
-                  className="w-full py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-soft hover:bg-primary/95 transition-colors cursor-pointer"
-                >
-                  Install App
-                </button>
-              </div>
-            </div>
-          )}
         </aside>
       )}
 
@@ -118,20 +103,100 @@ export function AppShell() {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const navigate = useNavigate();
   const signOutFn = useServerFn(signOut);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{ id: number; text: string; read: boolean; time: string }>>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("endo_notifications");
+    if (saved) {
+      setNotifications(JSON.parse(saved));
+    } else {
+      const defaultNotifs = [
+        { id: 1, text: "Welcome to Endo Guide Pro! Start by adding your first case.", read: false, time: "Just now" },
+        { id: 2, text: "Tip: Use the file calculator for accurate MAF measurements.", read: false, time: "1 hour ago" },
+        { id: 3, text: "Update: Diagnostic guidelines have been updated.", read: false, time: "Yesterday" }
+      ];
+      setNotifications(defaultNotifs);
+      localStorage.setItem("endo_notifications", JSON.stringify(defaultNotifs));
+    }
+  }, []);
+
+  const hasUnread = notifications.some((n) => !n.read);
+
+  const markAllRead = () => {
+    const updated = notifications.map((n) => ({ ...n, read: true }));
+    setNotifications(updated);
+    localStorage.setItem("endo_notifications", JSON.stringify(updated));
+  };
+
+  const clearNotification = (id: number) => {
+    const updated = notifications.filter((n) => n.id !== id);
+    setNotifications(updated);
+    localStorage.setItem("endo_notifications", JSON.stringify(updated));
+  };
 
   return (
-    <header className="mb-6 pt-6 flex items-start justify-between">
+    <header className="mb-6 pt-6 flex items-start justify-between relative">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
         {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-2">
-        <button className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-background"></span>
-        </button>
+      <div className="flex items-center gap-2 relative z-50">
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors relative cursor-pointer"
+          >
+            <Bell className="w-5 h-5" />
+            {hasUnread && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-background"></span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-72 bg-card rounded-2xl border border-border shadow-lg p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+                <span className="text-xs font-bold text-foreground">Notifications</span>
+                {hasUnread && (
+                  <button
+                    onClick={markAllRead}
+                    className="text-[10px] text-primary font-bold hover:underline cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No notifications</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className={`text-xs p-2 rounded-xl border transition-colors flex items-start justify-between gap-2 ${
+                        n.read ? "bg-muted/30 border-transparent text-muted-foreground" : "bg-primary/5 border-primary/10 text-foreground"
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <p className="leading-relaxed">{n.text}</p>
+                        <span className="text-[10px] text-muted-foreground block">{n.time}</span>
+                      </div>
+                      <button
+                        onClick={() => clearNotification(n.id)}
+                        className="text-muted-foreground hover:text-foreground text-[14px] leading-none font-bold ml-1 cursor-pointer"
+                        title="Dismiss"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         <button
-          className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors"
+          className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors cursor-pointer"
           onClick={async () => {
             await signOutFn({ data: undefined });
             navigate({ to: "/login" });
