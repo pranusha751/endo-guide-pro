@@ -14,7 +14,6 @@ import {
 import { HeartPulse, Loader2, MailCheck, AlertCircle } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import { signInWithPassword } from "@/lib/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { z } from "zod";
@@ -34,7 +33,7 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(search.verified === "true" ? "Account created successfully! You can now sign in." : search.verified === "check-email" ? "Please check your email for a verification link." : null);
+  const [info, setInfo] = useState<string | null>(search.verified === "check-email" ? "Please check your email for a verification link." : null);
 
   const [loading, setLoading] = useState(false);
 
@@ -44,18 +43,19 @@ function RouteComponent() {
     setInfo(null);
     setLoading(true);
     try {
-      const res = await signInWithPassword({
-        data: { email, password },
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      if (res.error) {
-        setError(res.error);
+      if (signInError) {
+        setError(signInError.message);
         return;
       }
       navigate({ to: "/workflow" });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred during login.";
-      setError(msg === "{}" ? "An unexpected error occurred during login." : msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }
