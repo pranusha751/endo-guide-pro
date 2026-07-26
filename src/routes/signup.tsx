@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HeartPulse, Loader2 } from "lucide-react";
+import { HeartPulse, Loader2, MailCheck } from "lucide-react";
 import { signUpWithPassword } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -24,6 +24,7 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -40,8 +41,8 @@ function RouteComponent() {
         return;
       }
 
-      // Account created — navigate to login with success message
-      navigate({ to: "/login", search: { verified: "true" } });
+      // Show success state — tell user to check email
+      setSuccess(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
       setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
@@ -49,6 +50,37 @@ function RouteComponent() {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-6">
+        <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border text-center">
+          <CardContent className="pt-10 pb-8 space-y-4">
+            <div className="flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                <MailCheck className="h-8 w-8 text-emerald-600" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-emerald-700">Check your email!</h2>
+            <p className="text-muted-foreground text-sm">
+              We sent a verification link to <strong>{email}</strong>.
+              Click the link to activate your account.
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Didn't receive it? Check your spam folder or go back to{" "}
+              <button
+                onClick={() => navigate({ to: "/login", search: { verified: "check-email" } })}
+                className="text-primary underline"
+              >
+                login page to resend
+              </button>
+              .
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">

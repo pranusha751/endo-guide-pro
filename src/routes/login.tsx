@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2, MailCheck, AlertCircle } from "lucide-react";
-import { signInWithPassword } from "@/lib/auth";
+import { signInWithPassword, resendVerificationEmail } from "@/lib/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { z } from "zod";
 
@@ -31,11 +31,14 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showResend, setShowResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(
     search.verified === "true"
-      ? "Account created successfully! You can now sign in."
+      ? "Account created! Please check your email and click the verification link to activate your account."
       : search.verified === "check-email"
-        ? "Account created! You can now sign in."
+        ? "Please check your email and click the verification link before logging in."
         : null,
   );
   const [loading, setLoading] = useState(false);
@@ -44,6 +47,8 @@ function RouteComponent() {
     e.preventDefault();
     setError(null);
     setInfo(null);
+    setShowResend(false);
+    setResendMsg(null);
     setLoading(true);
     try {
       const res = await signInWithPassword({
@@ -52,6 +57,10 @@ function RouteComponent() {
 
       if (res.error) {
         setError(res.error);
+        // Show resend button if the error is about email verification
+        if (res.error.toLowerCase().includes("not verified") || res.error.toLowerCase().includes("verification")) {
+          setShowResend(true);
+        }
         return;
       }
       navigate({ to: "/workflow" });
@@ -60,6 +69,27 @@ function RouteComponent() {
       setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError("Please enter your email address above first.");
+      return;
+    }
+    setResendLoading(true);
+    setResendMsg(null);
+    try {
+      const res = await resendVerificationEmail({ data: { email } });
+      if (res.error) {
+        setResendMsg(res.error);
+      } else {
+        setResendMsg(res.message || "Verification email sent! Check your inbox.");
+      }
+    } catch {
+      setResendMsg("Failed to resend email. Please try again.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -91,9 +121,7 @@ function RouteComponent() {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -104,6 +132,7 @@ function RouteComponent() {
                 disabled={loading}
               />
             </div>
+
             {error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -111,13 +140,33 @@ function RouteComponent() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
+            {showResend && (
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full text-sm"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                >
+                  {resendLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Resend Verification Email
+                </Button>
+                {resendMsg && (
+                  <p className="text-sm text-center text-muted-foreground">{resendMsg}</p>
+                )}
+              </div>
+            )}
+
             {info && (
               <Alert>
                 <MailCheck className="h-4 w-4 text-emerald-500" />
-                <AlertTitle className="text-emerald-500">Success</AlertTitle>
+                <AlertTitle className="text-emerald-500">Check Your Email</AlertTitle>
                 <AlertDescription className="text-emerald-600">{info}</AlertDescription>
               </Alert>
             )}
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Sign in
