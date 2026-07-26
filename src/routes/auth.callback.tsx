@@ -41,7 +41,7 @@ function AuthCallbackComponent() {
     handleCallback();
   }, [navigate]);
 
-  if (error) {
+    if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-md text-center space-y-4">
@@ -61,7 +61,7 @@ function AuthCallbackComponent() {
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-foreground">Google Sign-In Failed</h1>
+          <h1 className="text-xl font-bold text-foreground">Authentication Failed</h1>
           <p className="text-sm text-muted-foreground">{error}</p>
           <a
             href="/login"
@@ -78,7 +78,7 @@ function AuthCallbackComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Signing you in with Google…</p>
+        <p className="text-sm text-muted-foreground">Authenticating…</p>
       </div>
     </div>
   );

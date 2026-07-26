@@ -12,20 +12,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2, MailCheck, AlertCircle } from "lucide-react";
-import { signInWithPassword, resendVerificationEmail } from "@/lib/auth";
+
 import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+import { z } from "zod";
+
+const loginSearchSchema = z.object({
+  verified: z.string().optional(),
+});
+
 export const Route = createFileRoute("/login")({
+  validateSearch: loginSearchSchema,
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(search.verified === "check-email" ? "Please check your email for a verification link." : null);
 
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +43,13 @@ function RouteComponent() {
     setInfo(null);
     setLoading(true);
     try {
-      const res = await signInWithPassword({ data: { email, password } });
-      if (res.error || !res.user) {
-        setError(res.error ?? "Unable to sign in.");
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
         return;
       }
       navigate({ to: "/workflow" });
@@ -49,28 +61,7 @@ function RouteComponent() {
     }
   };
 
-  const handleResend = async () => {
-    if (!email) {
-      setError("Please enter your email to resend verification.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setInfo(null);
-    try {
-      const res = await resendVerificationEmail({ data: { email } });
-      if (res.error) {
-        setError(res.error);
-      } else {
-        setInfo(res.message ?? "Verification email sent.");
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const GOOGLE_OAUTH_CONFIGURED =
     import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true";
@@ -155,18 +146,6 @@ function RouteComponent() {
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription className="space-y-2">
                   <p>{error}</p>
-                  {error.includes("verify your email") && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleResend}
-                      className="mt-2 w-full"
-                      type="button"
-                      disabled={loading}
-                    >
-                      Resend Verification Email
-                    </Button>
-                  )}
                 </AlertDescription>
               </Alert>
             )}
