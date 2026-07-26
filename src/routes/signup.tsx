@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HeartPulse, Loader2, MailCheck } from "lucide-react";
+import { HeartPulse, Loader2, MailCheck, CheckCircle } from "lucide-react";
 import { signUpWithPassword } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -24,7 +24,8 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [verifyUrl, setVerifyUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -41,8 +42,10 @@ function RouteComponent() {
         return;
       }
 
-      // Show success state — tell user to check email
-      setSuccess(true);
+      setSuccessMsg(res.message || "Account created successfully!");
+      if (res.verifyUrl) {
+        setVerifyUrl(res.verifyUrl);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
       setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
@@ -51,7 +54,7 @@ function RouteComponent() {
     }
   };
 
-  if (success) {
+  if (successMsg) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
         <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border text-center">
@@ -61,21 +64,38 @@ function RouteComponent() {
                 <MailCheck className="h-8 w-8 text-emerald-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-emerald-700">Check your email!</h2>
-            <p className="text-muted-foreground text-sm">
-              We sent a verification link to <strong>{email}</strong>.
-              Click the link to activate your account.
-            </p>
-            <p className="text-muted-foreground text-xs">
-              Didn't receive it? Check your spam folder or go back to{" "}
-              <button
-                onClick={() => navigate({ to: "/login", search: { verified: "check-email" } })}
-                className="text-primary underline"
-              >
-                login page to resend
-              </button>
-              .
-            </p>
+            <h2 className="text-2xl font-bold text-emerald-700">Account Created!</h2>
+            <p className="text-muted-foreground text-sm">{successMsg}</p>
+
+            {verifyUrl ? (
+              // Email couldn't be sent — show direct verify button
+              <div className="space-y-3 pt-2">
+                <p className="text-xs text-muted-foreground">
+                  Click the button below to verify your account instantly:
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={() => window.location.href = verifyUrl}
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Verify My Account
+                </Button>
+              </div>
+            ) : (
+              // Email was sent successfully
+              <div className="space-y-2 pt-2">
+                <p className="text-muted-foreground text-xs">
+                  Email sent to <strong>{email}</strong>. Check your inbox (and spam folder).
+                </p>
+                <Button
+                  variant="outline"
+                  className="w-full text-sm"
+                  onClick={() => navigate({ to: "/login" })}
+                >
+                  Go to Login
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

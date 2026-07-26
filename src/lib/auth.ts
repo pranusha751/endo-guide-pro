@@ -15,6 +15,7 @@ export type AuthResponse = {
   user: AuthUser | null;
   error: string | null;
   message?: string | null;
+  verifyUrl?: string;
 };
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
@@ -29,10 +30,10 @@ function getSupabaseClient() {
   });
 }
 
-async function sendVerificationEmail(email: string, fullName: string, token: string): Promise<void> {
+async function sendVerificationEmail(email: string, fullName: string, token: string): Promise<boolean> {
   const verifyUrl = `${APP_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
-  await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
@@ -55,6 +56,11 @@ async function sendVerificationEmail(email: string, fullName: string, token: str
       `,
     }),
   });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Resend API error ${res.status}: ${body}`);
+  }
+  return true;
 }
 
 // ─── Get Current User ─────────────────────────────────────────────────────────
@@ -126,18 +132,24 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
         return { user: null, error: msg || "Failed to create account. Please try again." };
       }
 
-      // Send verification email via Resend
+      const verifyUrl = `${APP_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(data.email)}`;
+
+      // Send verification email via Resend (best effort — may fail on free plan for non-owner emails)
+      let emailSent = false;
       try {
-        await sendVerificationEmail(data.email, data.fullName, verificationToken);
+        const emailRes = await sendVerificationEmail(data.email, data.fullName, verificationToken);
+        emailSent = true;
       } catch (emailErr) {
         console.error("Failed to send verification email:", emailErr);
-        // Don't fail the signup if email fails — user can request resend
       }
 
       return {
         user: null,
         error: null,
-        message: "Account created! Please check your email to verify your account before logging in.",
+        message: emailSent
+          ? "Account created! Please check your email to verify your account before logging in."
+          : "Account created! Click the button below to verify your email and activate your account.",
+        verifyUrl: emailSent ? undefined : verifyUrl,
       };
     } catch (err) {
       console.error("Signup unexpected error:", err);
