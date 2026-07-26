@@ -14,6 +14,7 @@ import {
 import { HeartPulse, Loader2, MailCheck } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { signUpWithPassword } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -32,27 +33,25 @@ function RouteComponent() {
     setError(null);
     setLoading(true);
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            fullName: name,
-          },
+      const res = await signUpWithPassword({
+        data: {
+          email,
+          password,
+          fullName: name,
         },
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
+      if (res.error) {
+        setError(res.error);
         return;
       }
       
-      // Supabase natively handles sending the verification email.
+      // Navigate to login after successful account creation
       navigate({ to: "/login", search: { verified: "check-email" } });
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "An unexpected error occurred during signup.";
-      setError(msg);
+      setError(msg === "{}" ? "An unexpected error occurred during signup." : msg);
     } finally {
       setLoading(false);
     }
