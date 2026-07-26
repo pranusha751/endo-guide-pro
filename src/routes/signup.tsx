@@ -47,7 +47,7 @@ function RouteComponent() {
       }
       
       // Navigate to login after successful account creation
-      navigate({ to: "/login", search: { verified: "check-email" } });
+      navigate({ to: "/login", search: { verified: "true" } });
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "An unexpected error occurred during signup.";

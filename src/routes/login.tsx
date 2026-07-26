@@ -34,7 +34,7 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(search.verified === "check-email" ? "Please check your email for a verification link." : null);
+  const [info, setInfo] = useState<string | null>(search.verified === "true" ? "Account created successfully! You can now sign in." : search.verified === "check-email" ? "Please check your email for a verification link." : null);
 
   const [loading, setLoading] = useState(false);
 
