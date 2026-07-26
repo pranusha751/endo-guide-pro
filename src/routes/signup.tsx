@@ -43,15 +43,24 @@ function RouteComponent() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        console.error("Signup error details:", signUpError);
+        console.log("signUpError.message:", signUpError.message);
+        let msg = signUpError.message;
+        if (msg === "{}" || !msg) {
+          msg = "An error occurred during signup. Please check your connection and try again.";
+        }
+        setError(msg);
         return;
       }
       
       // Supabase natively handles sending the verification email.
       navigate({ to: "/login", search: { verified: "check-email" } });
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "An unexpected error occurred during signup.";
+      console.error("Signup catch block error:", err);
+      let msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
+      if (msg === "{}" || !msg) {
+        msg = "An unexpected error occurred during signup. Please try again.";
+      }
       setError(msg);
     } finally {
       setLoading(false);
