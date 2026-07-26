@@ -12,10 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { HeartPulse, Loader2, MailCheck, AlertCircle } from "lucide-react";
-
-import { supabase } from "@/lib/supabase";
+import { signInWithPassword } from "@/lib/auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 import { z } from "zod";
 
 const loginSearchSchema = z.object({
@@ -33,8 +31,13 @@ function RouteComponent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(search.verified === "check-email" ? "Please check your email for a verification link." : null);
-
+  const [info, setInfo] = useState<string | null>(
+    search.verified === "true"
+      ? "Account created successfully! You can now sign in."
+      : search.verified === "check-email"
+        ? "Account created! You can now sign in."
+        : null,
+  );
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -43,55 +46,19 @@ function RouteComponent() {
     setInfo(null);
     setLoading(true);
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await signInWithPassword({
+        data: { email, password },
       });
 
-      if (signInError) {
-        setError(signInError.message);
+      if (res.error) {
+        setError(res.error);
         return;
       }
       navigate({ to: "/workflow" });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred during login.";
-      setError(msg);
+      setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
     } finally {
-      setLoading(false);
-    }
-  };
-
-
-
-  const GOOGLE_OAUTH_CONFIGURED =
-    import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true";
-
-  const handleGoogleLogin = async () => {
-    setError(null);
-    setInfo(null);
-
-    if (!GOOGLE_OAUTH_CONFIGURED) {
-      setInfo("Google sign-in is coming soon! Please use email and password to sign in.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (oauthError) {
-        setError(oauthError.message);
-        setLoading(false);
-      }
-      // On success, browser is redirected to Google — no further action needed here
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "An unexpected error occurred during Google login.";
-      setError(msg);
       setLoading(false);
     }
   };
@@ -126,9 +93,6 @@ function RouteComponent() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <a href="#" className="text-sm font-medium text-primary hover:underline">
-                  Forgot password?
-                </a>
               </div>
               <Input
                 id="password"
@@ -144,9 +108,7 @@ function RouteComponent() {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
-                <AlertDescription className="space-y-2">
-                  <p>{error}</p>
-                </AlertDescription>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             {info && (
@@ -160,7 +122,6 @@ function RouteComponent() {
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Sign in
             </Button>
-
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">

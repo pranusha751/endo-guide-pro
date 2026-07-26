@@ -11,9 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HeartPulse, Loader2, MailCheck } from "lucide-react";
-
-import { supabase } from "@/lib/supabase";
+import { HeartPulse, Loader2 } from "lucide-react";
+import { signUpWithPassword } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -32,73 +31,24 @@ function RouteComponent() {
     setError(null);
     setLoading(true);
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            fullName: name,
-          },
-        },
+      const res = await signUpWithPassword({
+        data: { fullName: name, email, password },
       });
 
-      if (signUpError) {
-        console.error("Signup error details:", signUpError);
-        console.log("signUpError.message:", signUpError.message);
-        let msg = signUpError.message;
-        if (msg === "{}" || !msg) {
-          msg = "An error occurred during signup. Please check your connection and try again.";
-        }
-        setError(msg);
+      if (res.error) {
+        setError(res.error);
         return;
       }
-      
-      // Supabase natively handles sending the verification email.
-      navigate({ to: "/login", search: { verified: "check-email" } });
+
+      // Account created — navigate to login with success message
+      navigate({ to: "/login", search: { verified: "true" } });
     } catch (err: unknown) {
-      console.error("Signup catch block error:", err);
-      let msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
-      if (msg === "{}" || !msg) {
-        msg = "An unexpected error occurred during signup. Please try again.";
-      }
-      setError(msg);
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
+      setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
     } finally {
       setLoading(false);
     }
   };
-
-  const GOOGLE_OAUTH_CONFIGURED =
-    import.meta.env.VITE_GOOGLE_OAUTH_ENABLED === "true";
-
-  const handleGoogleSignup = async () => {
-    setError(null);
-
-    if (!GOOGLE_OAUTH_CONFIGURED) {
-      setError("Google sign-in is coming soon! Please use email and password to create your account.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (oauthError) {
-        setError(oauthError.message);
-        setLoading(false);
-      }
-      // On success, browser is redirected to Google — no further action needed here
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "An unexpected error occurred during Google signup.";
-      setError(msg);
-      setLoading(false);
-    }
-  };
-
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
@@ -148,6 +98,7 @@ function RouteComponent() {
                 autoComplete="new-password"
                 placeholder="At least 6 characters"
                 required
+                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
@@ -158,12 +109,10 @@ function RouteComponent() {
                 {error}
               </p>
             )}
-
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create account
             </Button>
-
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
