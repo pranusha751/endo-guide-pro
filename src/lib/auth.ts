@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
+import sgMail from "@sendgrid/mail";
 
 export type AuthUser = {
   id: string;
@@ -19,8 +20,9 @@ export type AuthResponse = {
 };
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-for-endo-guide";
-const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
+const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "";
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.SUPABASE_URL || "";
@@ -33,33 +35,29 @@ function getSupabaseClient() {
 async function sendVerificationEmail(email: string, fullName: string, token: string): Promise<boolean> {
   const verifyUrl = `${APP_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Endo Made Easy <onboarding@resend.dev>",
-      to: [email],
-      subject: "Verify your Endo Made Easy account",
-      html: `
-        <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #16a34a;">Welcome to Endo Made Easy, ${fullName}!</h2>
-          <p>Thank you for signing up. Please verify your email address to activate your account.</p>
-          <a href="${verifyUrl}" style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">
-            Verify Email Address
-          </a>
-          <p style="color: #6b7280; font-size: 14px;">Or copy this link: ${verifyUrl}</p>
-          <p style="color: #6b7280; font-size: 14px;">This link expires in 24 hours.</p>
-        </div>
-      `,
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${body}`);
+  if (!SENDGRID_API_KEY || !SENDGRID_FROM_EMAIL) {
+    throw new Error("SendGrid not configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in your .env file.");
   }
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  await sgMail.send({
+    from: { name: "Endo Made Easy", email: SENDGRID_FROM_EMAIL },
+    to: email,
+    subject: "Verify your Endo Made Easy account",
+    html: `
+      <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px;">
+        <h2 style="color: #16a34a;">Welcome to Endo Made Easy, ${fullName}!</h2>
+        <p>Thank you for signing up. Please verify your email address to activate your account.</p>
+        <a href="${verifyUrl}" style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0;">
+          Verify Email Address
+        </a>
+        <p style="color: #6b7280; font-size: 14px;">Or copy this link: ${verifyUrl}</p>
+        <p style="color: #6b7280; font-size: 14px;">This link expires in 24 hours.</p>
+      </div>
+    `,
+  });
+
   return true;
 }
 
