@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { randomUUID } from "crypto";
+
 import { getSupabaseServerClient } from "./auth";
 
 export type CaseRecord = {
@@ -91,7 +91,7 @@ export const saveCase = createServerFn({ method: "POST" })
       const { data: newCase, error } = await supabase
         .from("Case")
         .insert({
-          id: randomUUID(),
+          id: globalThis.crypto.randomUUID(),
           userId: user.id,
           patientName: data.patientName || null,
           patientAge: data.patientAge || null,

@@ -1,7 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
-import { createServerClient } from "@supabase/ssr";
-import sgMail from "@sendgrid/mail";
 
 export type AuthUser = {
   id: string;
@@ -16,7 +13,10 @@ export type AuthResponse = {
   verifyUrl?: string; // Kept for backwards compatibility if needed
 };
 
-export function getSupabaseServerClient() {
+export async function getSupabaseServerClient() {
+  const { getCookie, setCookie, deleteCookie } = await import("@tanstack/react-start/server");
+  const { createServerClient } = await import("@supabase/ssr");
+
   const supabaseUrl = process.env.SUPABASE_URL || "";
   const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || "";
 
@@ -44,6 +44,7 @@ export function getSupabaseServerClient() {
 // ─── Custom Email Sender ──────────────────────────────────────────────────────
 
 async function sendVerificationEmail(email: string, fullName: string, actionLink: string): Promise<boolean> {
+  const { default: sgMail } = await import("@sendgrid/mail");
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
   const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "";
 
@@ -78,7 +79,7 @@ async function sendVerificationEmail(email: string, fullName: string, actionLink
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const supabase = getSupabaseServerClient();
+    const supabase = await getSupabaseServerClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) return null;
@@ -99,7 +100,7 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName: string; email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
 
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -115,9 +116,7 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
         return { user: null, error: error.message };
       }
 
-      // If require email confirmation is turned on in Supabase, we manually generate the link
       if (!authData.session && authData.user) {
-        // Manually generate verification link using Admin client to send via SendGrid
         const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
         const adminUrl = process.env.SUPABASE_URL || "";
         const adminSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -176,7 +175,7 @@ export const signInWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
 
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -201,20 +200,17 @@ export const signInWithPassword = createServerFn({ method: "POST" })
     }
   });
 
-// ─── Verify Email (Stub) ───────────────────────────────────────────────────────
-// Verification is handled via Supabase magic links navigating to /auth/callback
 export const verifyEmail = createServerFn({ method: "POST" })
   .inputValidator((data: { token: string; email: string }) => data)
   .handler(async (): Promise<{ error: string | null; success: boolean }> => {
     return { error: "Email verification is handled natively by Supabase.", success: false };
   });
 
-// ─── Resend Verification Email ────────────────────────────────────────────────
 export const resendVerificationEmail = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string }) => data)
   .handler(async ({ data }): Promise<{ error: string | null; message: string | null }> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
       
       const adminUrl = process.env.SUPABASE_URL || "";
       const adminSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -242,7 +238,6 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
         }
       }
       
-      // Fallback to Supabase native resend
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: data.email,
@@ -257,12 +252,11 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
     }
   });
 
-// ─── Sign Out ─────────────────────────────────────────────────────────────────
-
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
-  const supabase = getSupabaseServerClient();
+  const supabase = await getSupabaseServerClient();
   await supabase.auth.signOut();
   
+  const { deleteCookie } = await import("@tanstack/react-start/server");
   deleteCookie("auth_token", { path: "/" });
 });
 
