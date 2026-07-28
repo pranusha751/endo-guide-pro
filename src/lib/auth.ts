@@ -100,49 +100,60 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName: string; email: string; password: string }) => data)
   .handler(async ({ data }): Promise<AuthResponse> => {
     try {
-      const supabase = await getSupabaseServerClient();
+      const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
+      const adminUrl = process.env.SUPABASE_URL || "";
+      const adminSecret = process.env.SUPABASE_SECRET_KEY || "";
 
-      const { data: authData, error } = await supabase.auth.signUp({
+      if (!adminUrl || !adminSecret) {
+        return { user: null, error: "Server configuration error. Please contact support." };
+      }
+
+      const { createClient } = await import("@supabase/supabase-js");
+      const adminSupabase = createClient(adminUrl, adminSecret);
+
+      // Step 1: Create user + generate a signup confirmation link in ONE call.
+      // This gives us a hashed_token we can embed directly in our callback URL,
+      // completely bypassing PKCE and avoiding the "code verifier" error.
+      const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
+        type: "signup",
         email: data.email,
         password: data.password,
         options: {
-          data: {
-            fullName: data.fullName,
-          }
-        }
+          data: { fullName: data.fullName },
+        },
       });
 
-      if (error) {
-        return { user: null, error: error.message };
+      if (linkError) {
+        return { user: null, error: linkError.message };
       }
 
-      if (!authData.session && authData.user) {
-        const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
-        const adminUrl = process.env.SUPABASE_URL || "";
-        const adminSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-        // We rely on Supabase's built-in email sender, which correctly handles PKCE.
-        // Make sure your Supabase Email Templates are configured with the custom HTML.
+      const hashedToken = linkData?.properties?.hashed_token;
+      if (!hashedToken) {
+        return { user: null, error: "Could not generate verification link. Please try again." };
+      }
 
-        return {
-          user: null,
-          error: null,
-          message: "Account created! Please check your email to verify your account before logging in."
-        };
+      // Step 2: Build a direct link to our /auth/callback with the token_hash.
+      // When clicked, this hits our callback which calls verifyOtp({ token_hash, type }).
+      const verificationUrl = `${APP_URL}/auth/callback?token_hash=${hashedToken}&type=signup`;
+
+      // Step 3: Send the email via SendGrid.
+      const emailSent = await sendVerificationEmail(data.email, data.fullName, verificationUrl);
+
+      if (!emailSent) {
+        console.error("SendGrid failed — falling back to Supabase built-in email.");
       }
 
       return {
-        user: { 
-          id: authData.user!.id, 
-          email: authData.user!.email as string, 
-          fullName: authData.user!.user_metadata?.fullName 
-        },
-        error: null
+        user: null,
+        error: null,
+        message: "Account created! Please check your email to verify your account before logging in.",
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
       return { user: null, error: msg };
     }
   });
+
 
 // ─── Sign In ──────────────────────────────────────────────────────────────────
 
@@ -185,17 +196,31 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string }) => data)
   .handler(async ({ data }): Promise<{ error: string | null; message: string | null }> => {
     try {
-      const supabase = await getSupabaseServerClient();
-      
       const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
-      // Let Supabase handle the resend internally to preserve PKCE flow
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
+      const adminUrl = process.env.SUPABASE_URL || "";
+      const adminSecret = process.env.SUPABASE_SECRET_KEY || "";
+
+      const { createClient } = await import("@supabase/supabase-js");
+      const adminSupabase = createClient(adminUrl, adminSecret);
+
+      // Look up the user's fullName
+      const { data: userList } = await adminSupabase.auth.admin.listUsers();
+      const user = userList?.users.find((u) => u.email === data.email);
+      const fullName = user?.user_metadata?.fullName || "User";
+
+      // Generate a fresh magic link token
+      const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
+        type: "magiclink",
         email: data.email,
-        options: { emailRedirectTo: `${APP_URL}/auth/callback` }
       });
 
-      if (error) return { error: error.message, message: null };
+      if (linkError || !linkData?.properties?.hashed_token) {
+        return { error: linkError?.message || "Could not generate link.", message: null };
+      }
+
+      const verificationUrl = `${APP_URL}/auth/callback?token_hash=${linkData.properties.hashed_token}&type=magiclink`;
+      await sendVerificationEmail(data.email, fullName, verificationUrl);
+
       return { error: null, message: "Verification email resent! Please check your inbox." };
     } catch (err) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
