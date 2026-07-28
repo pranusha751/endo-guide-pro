@@ -28,7 +28,11 @@ function AuthCallbackComponent() {
         if (verifyError) {
           setError(verifyError.message);
         } else {
-          navigate({ to: "/workflow" });
+          // Success! Redirect to login page as requested by user
+          navigate({ 
+            to: "/login",
+            search: { verified: "success" }
+          });
         }
         return;
       }

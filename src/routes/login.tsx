@@ -39,7 +39,9 @@ function RouteComponent() {
       ? "Account created! Please check your email and click the verification link to activate your account."
       : search.verified === "check-email"
         ? "Please check your email and click the verification link before logging in."
-        : null,
+        : search.verified === "success"
+          ? "Email verified successfully! You can now log in."
+          : null,
   );
   const [loading, setLoading] = useState(false);
 
