@@ -120,38 +120,13 @@ export const signUpWithPassword = createServerFn({ method: "POST" })
         const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
         const adminUrl = process.env.SUPABASE_URL || "";
         const adminSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-        
-        let emailSent = false;
-        
-        if (adminUrl && adminSecret) {
-          const { createClient } = await import("@supabase/supabase-js");
-          const adminSupabase = createClient(adminUrl, adminSecret);
-          
-          const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
-            type: 'signup',
-            email: data.email,
-            password: data.password,
-            options: {
-              redirectTo: `${APP_URL}/auth/callback`,
-              data: { fullName: data.fullName }
-            }
-          });
-          
-          if (!linkError && linkData?.properties?.action_link) {
-            try {
-              emailSent = await sendVerificationEmail(data.email, data.fullName, linkData.properties.action_link);
-            } catch (emailErr) {
-              console.error("Failed to send verification email:", emailErr);
-            }
-          }
-        }
+        // We rely on Supabase's built-in email sender, which correctly handles PKCE.
+        // Make sure your Supabase Email Templates are configured with the custom HTML.
 
         return {
           user: null,
           error: null,
-          message: emailSent 
-            ? "Account created! Please check your email to verify your account before logging in."
-            : "Account created! You will receive a verification email shortly."
+          message: "Account created! Please check your email to verify your account before logging in."
         };
       }
 
@@ -212,32 +187,8 @@ export const resendVerificationEmail = createServerFn({ method: "POST" })
     try {
       const supabase = await getSupabaseServerClient();
       
-      const adminUrl = process.env.SUPABASE_URL || "";
-      const adminSecret = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
       const APP_URL = process.env.APP_URL || "https://endo-guide-pro-1.onrender.com";
-
-      if (adminUrl && adminSecret) {
-        const { createClient } = await import("@supabase/supabase-js");
-        const adminSupabase = createClient(adminUrl, adminSecret);
-        
-        const { data: userList } = await adminSupabase.auth.admin.listUsers();
-        const user = userList?.users.find(u => u.email === data.email);
-        const fullName = user?.user_metadata?.fullName || "User";
-
-        const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
-          type: 'magiclink',
-          email: data.email,
-          options: {
-            redirectTo: `${APP_URL}/auth/callback`,
-          }
-        });
-
-        if (!linkError && linkData?.properties?.action_link) {
-          await sendVerificationEmail(data.email, fullName, linkData.properties.action_link);
-          return { error: null, message: "Verification email resent! Please check your inbox." };
-        }
-      }
-      
+      // Let Supabase handle the resend internally to preserve PKCE flow
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: data.email,

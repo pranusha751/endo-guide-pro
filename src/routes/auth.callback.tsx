@@ -13,28 +13,49 @@ function AuthCallbackComponent() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Supabase processes the OAuth code/token from the URL fragment/query
-      const { data, error: sessionError } = await supabase.auth.getSession();
+      const params = new URLSearchParams(window.location.search);
+      const token_hash = params.get("token_hash");
+      const type = params.get("type") as "signup" | "recovery" | "email" | "magiclink" | null;
+      const code = params.get("code");
 
-      if (sessionError) {
-        setError(sessionError.message);
+      // --- Flow 1: Email confirmation / Magic link (token_hash + type) ---
+      if (token_hash && type) {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash,
+          type,
+        });
+
+        if (verifyError) {
+          setError(verifyError.message);
+        } else {
+          navigate({ to: "/workflow" });
+        }
         return;
       }
 
-      if (data.session) {
-        // Successfully authenticated — redirect to the main app
-        navigate({ to: "/workflow" });
-      } else {
-        // No session yet — try exchanging the code from the URL
+      // --- Flow 2: OAuth / PKCE (code in URL) ---
+      if (code) {
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
           window.location.href,
         );
-
         if (exchangeError) {
           setError(exchangeError.message);
         } else {
           navigate({ to: "/workflow" });
         }
+        return;
+      }
+
+      // --- Flow 3: Already has a session (e.g. page refresh) ---
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        setError(sessionError.message);
+        return;
+      }
+      if (data.session) {
+        navigate({ to: "/workflow" });
+      } else {
+        setError("No authentication parameters found. Please try signing up again.");
       }
     };
 
