@@ -38,21 +38,27 @@ function RouteComponent() {
       });
 
       if (res.error) {
+        console.error("Signup error response:", res);
         let errMsg = "An unexpected error occurred. Please try again.";
-        if (typeof res.error === "string" && res.error !== "{}" && res.error.length > 2) {
+        if (typeof res.error === "string" && res.error !== "{}") {
           errMsg = res.error;
-        } else if (typeof res.error === "object") {
-          errMsg = "Unable to process signup. Please try again.";
+        } else if (res.error) {
+          errMsg = JSON.stringify(res.error);
         }
-        setError(errMsg);
+        setError(`Error: ${errMsg}`);
         return;
       }
 
-      // Navigate to login with query param to show verify message
-      navigate({
-        to: "/login",
-        search: { verified: "check-email" },
-      });
+      if (res.user) {
+        // Email confirmation is disabled, user is immediately logged in
+        navigate({ to: "/workflow" });
+      } else {
+        // Navigate to login with query param to show verify message
+        navigate({
+          to: "/login",
+          search: { verified: "check-email" },
+        });
+      }
     } catch (err: unknown) {
       let msg = "An unexpected error occurred during signup.";
       if (err instanceof Error && err.message && err.message !== "{}" && err.message.length > 2) {
