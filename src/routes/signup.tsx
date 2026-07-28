@@ -38,69 +38,33 @@ function RouteComponent() {
       });
 
       if (res.error) {
-        setError(res.error);
+        let errMsg = "An unexpected error occurred. Please try again.";
+        if (typeof res.error === "string" && res.error !== "{}" && res.error.length > 2) {
+          errMsg = res.error;
+        } else if (typeof res.error === "object") {
+          errMsg = "Unable to process signup. Please try again.";
+        }
+        setError(errMsg);
         return;
       }
 
-      setSuccessMsg(res.message || "Account created successfully!");
-      if (res.verifyUrl) {
-        setVerifyUrl(res.verifyUrl);
-      }
+      // Navigate to login with query param to show verify message
+      navigate({
+        to: "/login",
+        search: { verified: "check-email" },
+      });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred during signup.";
-      setError(msg === "{}" ? "An unexpected error occurred. Please try again." : msg);
+      let msg = "An unexpected error occurred during signup.";
+      if (err instanceof Error && err.message && err.message !== "{}" && err.message.length > 2) {
+        msg = err.message;
+      } else if (typeof err === "string" && err !== "{}" && err.length > 2) {
+        msg = err;
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
-
-  if (successMsg) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-6">
-        <Card className="w-full max-w-sm rounded-2xl shadow-sm border-0 sm:border text-center">
-          <CardContent className="pt-10 pb-8 space-y-4">
-            <div className="flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-                <MailCheck className="h-8 w-8 text-emerald-600" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold text-emerald-700">Account Created!</h2>
-            <p className="text-muted-foreground text-sm">{successMsg}</p>
-
-            {verifyUrl ? (
-              // Email couldn't be sent — show direct verify button
-              <div className="space-y-3 pt-2">
-                <p className="text-xs text-muted-foreground">
-                  Click the button below to verify your account instantly:
-                </p>
-                <Button
-                  className="w-full"
-                  onClick={() => window.location.href = verifyUrl}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Verify My Account
-                </Button>
-              </div>
-            ) : (
-              // Email was sent successfully
-              <div className="space-y-2 pt-2">
-                <p className="text-muted-foreground text-xs">
-                  Email sent to <strong>{email}</strong>. Check your inbox (and spam folder).
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full text-sm"
-                  onClick={() => navigate({ to: "/login" })}
-                >
-                  Go to Login
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-1 items-center justify-center p-6 overflow-y-auto">
