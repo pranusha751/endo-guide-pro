@@ -15,7 +15,7 @@ export default function CaseDetailsScreen() {
   }, [caseId]);
 
   const fetchCase = async () => {
-    const { data: caseData } = await supabase.from('cases').select('*').eq('id', caseId).single();
+    const { data: caseData } = await supabase.from('Case').select('*').eq('id', caseId).single();
     setData(caseData);
     setLoading(false);
   };
@@ -30,10 +30,10 @@ export default function CaseDetailsScreen() {
       <View style={styles.headerCard}>
         <Ionicons name="person-circle" size={48} color="#ccc" />
         <View style={{ marginLeft: 15 }}>
-          <Text style={styles.patientName}>{data.patient_name || 'Anonymous'}</Text>
+          <Text style={styles.patientName}>{data.patientName || 'Anonymous'}</Text>
           <Text style={styles.patientDetails}>
-            {data.patient_age ? `${data.patient_age} yrs ` : ''}
-            {data.patient_gender ? `· ${data.patient_gender}` : ''}
+            {data.patientAge ? `${data.patientAge} yrs ` : ''}
+            {data.patientGender ? `· ${data.patientGender}` : ''}
           </Text>
         </View>
       </View>
@@ -41,9 +41,9 @@ export default function CaseDetailsScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Clinical Information</Text>
         <Row label="Tooth" value={`${data.tooth} — ${toothInfo?.name || ''}`} />
-        <Row label="Diagnosis" value={data.diagnosis} />
-        <Row label="File System" value={data.file_system} />
-        <Row label="Date Saved" value={new Date(data.created_at).toLocaleString()} />
+        <Row label="Diagnosis" value={data.dx} />
+        <Row label="File System" value={data.fileSystem} />
+        <Row label="Date Saved" value={new Date(data.createdAt).toLocaleString()} />
       </View>
       
       <View style={styles.card}>

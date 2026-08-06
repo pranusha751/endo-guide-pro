@@ -30,7 +30,8 @@ export default function RootLayout() {
 
     if (session) {
       if (segs.length === 0 || inAuthGroup) {
-        router.replace('/(main)' as any);
+        // Automatically route to workflow, matching the web app flow
+        router.replace('/(main)/workflow' as any);
       }
     } else if (!session && !inAuthGroup) {
       router.replace('/(auth)/login' as any);

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "4c2246b8-c2b2-4a61-b6ad-17a7def5684c"
+      }
+    },
+    "android": {
+      "package": "com.endoguide.app"
+    }
+  }
+}

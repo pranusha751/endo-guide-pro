@@ -22,7 +22,7 @@ export type CaseRecord = {
 export const getCases = createServerFn({ method: "GET" }).handler(
   async (): Promise<CaseRecord[]> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
@@ -51,7 +51,7 @@ export const getCaseById = createServerFn({ method: "GET" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }): Promise<CaseRecord | undefined> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return undefined;
 
@@ -76,7 +76,7 @@ export const saveCase = createServerFn({ method: "POST" })
   .inputValidator((caseData: Omit<CaseRecord, "id" | "userId" | "date" | "timestamp">) => caseData)
   .handler(async ({ data }): Promise<CaseRecord | null> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
@@ -88,6 +88,17 @@ export const saveCase = createServerFn({ method: "POST" })
       });
 
       const now = new Date().toISOString();
+
+      // Workaround for legacy foreign key constraint on Case_userId_fkey
+      await supabase.from('User').upsert({
+        id: user.id,
+        email: user.email || 'migrated@example.com',
+        fullName: 'Migrated User',
+        passwordHash: 'migrated',
+        isEmailVerified: true,
+        updatedAt: now
+      }, { onConflict: 'id' });
+
       const { data: newCase, error } = await supabase
         .from("Case")
         .insert({
@@ -126,7 +137,7 @@ export const updateCase = createServerFn({ method: "POST" })
   .inputValidator((caseData: { id: string; status?: string; notes?: string }) => caseData)
   .handler(async ({ data }): Promise<CaseRecord | null> => {
     try {
-      const supabase = getSupabaseServerClient();
+      const supabase = await getSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 

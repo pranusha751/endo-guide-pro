@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { TEETH, ACCESS_GUIDES } from '../../lib/endo-data';
+import { TEETH } from '../../lib/endo-data';
 import { Picker } from '@react-native-picker/picker';
+import { Colors } from '../../constants/theme';
 
 export default function AnatomyScreen() {
   const [tooth, setTooth] = useState("16");
@@ -45,14 +46,14 @@ const Row = ({ label, value }: { label: string, value: string }) => (
 );
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#f5f5f5', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
-  pickerContainer: { borderWidth: 1, borderColor: '#eee', borderRadius: 8, backgroundColor: '#fff', overflow: 'hidden', marginBottom: 20 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 15, elevation: 2 },
-  toothGraphic: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#d4edda', alignSelf: 'center', justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#c3e6cb' },
-  toothGraphicText: { fontSize: 28, fontWeight: 'bold', color: '#155724' },
-  rowItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  rowLabel: { fontSize: 14, color: '#666' },
-  rowValue: { fontSize: 14, fontWeight: 'bold', color: '#333' },
+  container: { padding: 20, backgroundColor: Colors.background, flexGrow: 1 },
+  title: { fontSize: 24, fontWeight: 'bold', color: Colors.foreground },
+  subtitle: { fontSize: 14, color: Colors.mutedForeground, marginBottom: 20 },
+  pickerContainer: { borderWidth: 1, borderColor: Colors.border, borderRadius: 12, backgroundColor: Colors.card, overflow: 'hidden', marginBottom: 20 },
+  card: { backgroundColor: Colors.card, borderRadius: 16, padding: 15, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  toothGraphic: { width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.mint, alignSelf: 'center', justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: Colors.border },
+  toothGraphicText: { fontSize: 28, fontWeight: 'bold', color: Colors.mintForeground },
+  rowItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  rowLabel: { fontSize: 14, color: Colors.mutedForeground },
+  rowValue: { fontSize: 14, fontWeight: 'bold', color: Colors.foreground },
 });
