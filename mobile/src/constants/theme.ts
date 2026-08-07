@@ -1,37 +1,38 @@
 export const Colors = {
-  // Beige base
-  background: '#F4F6F0',
-  foreground: '#1A2B22', // Dark green/teal text
+  // Beige base (matches web: oklch(0.974 0.018 90))
+  background: '#F5F3EE',
+  foreground: '#111111', // True black for clear readability
 
   // Cards & Modals
   card: '#FFFFFF',
-  cardForeground: '#1A2B22',
+  cardForeground: '#111111',
   popover: '#FFFFFF',
-  popoverForeground: '#1A2B22',
+  popoverForeground: '#111111',
 
-  // Mint primary
-  primary: '#4ade80',
-  primaryForeground: '#0f3f22', // Darker text for mint background
+  // Mint primary (matches web: oklch(0.78 0.12 160) ≈ #4ade80)
+  primary: '#2ECC71',
+  primaryForeground: '#0a3320',
 
   // Peach secondary
   secondary: '#ffedd5',
   secondaryForeground: '#c2410c',
 
-  muted: '#E5E7EB',
+  muted: '#EDEDE8',
   mutedForeground: '#6B7280',
 
-  accent: '#F3F4F6',
-  accentForeground: '#111827',
+  accent: '#E8F5EE',
+  accentForeground: '#111111',
 
   destructive: '#ef4444',
   destructiveForeground: '#fef2f2',
 
-  border: '#D1D5DB',
-  input: '#F3F4F6',
-  ring: '#4ade80',
+  border: '#D6D3CC',
+  input: '#EEECEA',
+  ring: '#2ECC71',
 
-  mint: '#dcfce7',
-  mintForeground: '#14532d',
+  // Mint accent (matches web --mint: oklch(0.91 0.08 160))
+  mint: '#C7F0D8',
+  mintForeground: '#0a3320',
   peach: '#ffedd5',
   peachForeground: '#9a3412',
   warning: '#fef08a',

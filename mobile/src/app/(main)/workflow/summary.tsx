@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { TEETH, DIAGNOSES, FILE_PROTOCOLS, FileSystem } from '../../../lib/endo-data';
+import { Colors } from '../../../constants/theme';
 
 export default function WorkflowSummaryScreen() {
   const router = useRouter();
@@ -171,29 +172,29 @@ const Row = ({ label, value, color }: { label: string, value: string, color?: st
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 15, backgroundColor: '#f5f5f5', flexGrow: 1, paddingBottom: 40 },
+  container: { padding: 15, backgroundColor: Colors.background, flexGrow: 1, paddingBottom: 40 },
   
-  banner: { flexDirection: 'row', backgroundColor: '#e6f2ff', borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#b3d7ff' },
-  bannerIcon: { width: 50, height: 50, borderRadius: 16, backgroundColor: '#007bff', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
+  banner: { flexDirection: 'row', backgroundColor: Colors.mint, borderRadius: 16, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: Colors.border },
+  bannerIcon: { width: 50, height: 50, borderRadius: 16, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   bannerTextContainer: { flex: 1 },
-  bannerTitle: { fontSize: 18, fontWeight: 'bold', color: '#0056b3' },
-  bannerSub: { fontSize: 13, color: '#007bff', marginTop: 4 },
+  bannerTitle: { fontSize: 18, fontWeight: 'bold', color: Colors.mintForeground },
+  bannerSub: { fontSize: 13, color: Colors.mintForeground, marginTop: 4, opacity: 0.8 },
 
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 20, marginBottom: 15, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  cardTitle: { fontSize: 12, fontWeight: 'bold', color: '#888', marginBottom: 15, textTransform: 'uppercase', letterSpacing: 1 },
+  card: { backgroundColor: Colors.card, borderRadius: 16, padding: 20, marginBottom: 15, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+  cardTitle: { fontSize: 12, fontWeight: 'bold', color: Colors.mutedForeground, marginBottom: 15, textTransform: 'uppercase', letterSpacing: 1 },
   
-  rowItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  rowLabel: { fontSize: 14, color: '#666' },
-  rowValue: { fontSize: 14, fontWeight: 'bold', color: '#333' },
+  rowItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  rowLabel: { fontSize: 14, color: Colors.mutedForeground },
+  rowValue: { fontSize: 14, fontWeight: 'bold', color: Colors.foreground },
   
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   badgeText: { fontSize: 13, fontWeight: 'bold' },
 
-  shareButton: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e0e0e0', padding: 16, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 15, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } },
-  shareButtonText: { color: '#007bff', fontSize: 14, fontWeight: 'bold', marginLeft: 10, letterSpacing: 1 },
+  shareButton: { backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, padding: 16, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 15, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } },
+  shareButtonText: { color: Colors.primary, fontSize: 14, fontWeight: 'bold', marginLeft: 10, letterSpacing: 1 },
 
-  saveButton: { backgroundColor: '#000', padding: 18, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginLeft: 10 },
+  saveButton: { backgroundColor: Colors.foreground, padding: 18, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
+  saveButtonText: { color: Colors.card, fontSize: 16, fontWeight: 'bold', marginLeft: 10 },
 
-  disclaimer: { fontSize: 10, color: '#999', textAlign: 'center', lineHeight: 16, paddingHorizontal: 10 }
+  disclaimer: { fontSize: 10, color: Colors.mutedForeground, textAlign: 'center', lineHeight: 16, paddingHorizontal: 10 }
 });

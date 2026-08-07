@@ -7,11 +7,11 @@ import { Colors } from '../../constants/theme';
 
 type CaseRecord = {
   id: string;
-  patient_name: string | null;
+  patientName: string | null;
   tooth: string;
-  diagnosis: string;
-  file_system: string;
-  created_at: string;
+  dx: string;
+  fileSystem: string;
+  createdAt: string;
 };
 
 export default function ProfileScreen() {
@@ -26,10 +26,10 @@ export default function ProfileScreen() {
       setUser(user);
       if (user) {
         const { data } = await supabase
-          .from('cases')
+          .from('Case')
           .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          .eq('userId', user.id)
+          .order('createdAt', { ascending: false });
         setCases(data || []);
       }
       setLoading(false);
@@ -72,7 +72,7 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.statCard}>
           <Ionicons name="checkmark-circle" size={20} color={Colors.mintForeground} />
-          <Text style={styles.statValue}>{cases.filter(c => c.diagnosis).length}</Text>
+          <Text style={styles.statValue}>{cases.filter(c => c.dx).length}</Text>
           <Text style={styles.statLabel}>Diagnosed</Text>
         </View>
       </View>
@@ -102,8 +102,8 @@ export default function ProfileScreen() {
               <Text style={styles.toothBadgeText}>{c.tooth}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.caseName}>{c.patient_name || c.diagnosis}</Text>
-              <Text style={styles.caseSub}>{c.diagnosis} · {new Date(c.created_at).toLocaleDateString()}</Text>
+              <Text style={styles.caseName}>{c.patientName || c.dx || 'Unnamed'}</Text>
+              <Text style={styles.caseSub}>{c.dx} · {new Date(c.createdAt).toLocaleDateString()}</Text>
             </View>
             <View style={styles.statusBadge}>
               <Text style={styles.statusText}>Completed</Text>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Alert, StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,10 +34,11 @@ export default function SignupScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         {/* Brand */}
         <View style={styles.brandRow}>
-          <View style={styles.logoIcon}>
-            <Ionicons name="shield-checkmark" size={32} color={Colors.mintForeground} />
-          </View>
-          <Text style={styles.brandName}>Endo Guide Pro</Text>
+          <Image
+            source={require('@/assets/images/endo-guide-logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
 
         <Text style={styles.title}>Create an account</Text>
@@ -105,9 +106,8 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: Colors.background, padding: 28, justifyContent: 'center' },
 
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 40, justifyContent: 'center' },
-  logoIcon: { width: 50, height: 50, borderRadius: 14, backgroundColor: Colors.mint, justifyContent: 'center', alignItems: 'center' },
-  brandName: { fontSize: 22, fontWeight: 'bold', color: Colors.foreground },
+  brandRow: { alignItems: 'center', marginBottom: 40, justifyContent: 'center' },
+  logoImage: { width: 120, height: 120, borderRadius: 28 },
 
   title: { fontSize: 26, fontWeight: 'bold', color: Colors.foreground, marginBottom: 6 },
   subtitle: { fontSize: 14, color: Colors.mutedForeground, marginBottom: 32 },
